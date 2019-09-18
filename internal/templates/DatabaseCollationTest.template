@@ -1,0 +1,28 @@
+/*
+Description:
+Test if the database has the correct collation
+
+Changes:
+Date		Who					Notes
+----------	---					--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial test
+*/
+CREATE PROCEDURE [TestBasic].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+
+    DECLARE @expected VARCHAR(255),
+        @actual VARCHAR(255)
+
+    SELECT @expected = '___COLLATION___'
+
+    ----- ACT ----------------------------------------------------
+
+    SELECT @actual = DATABASEPROPERTYEX('___DATABASE___', 'Collation');
+
+    ----- ASSERT -------------------------------------------------
+    EXEC tSQLt.AssertEquals @expected, @actual;
+END;

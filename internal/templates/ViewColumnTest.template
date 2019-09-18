@@ -1,0 +1,81 @@
+/*
+Description:
+Test if the view has the correct columns
+
+Changes:
+Date		Who						Notes
+----------	---						--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial procedure
+*/
+CREATE PROCEDURE [TestBasic].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+    -- Create the tables
+    CREATE TABLE #actual
+    (
+        [ColumnName] sysname NOT NULL,
+        [DataType] sysname NOT NULL,
+        [LengthSize] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
+    );
+
+    CREATE TABLE #expected
+    (
+        [ColumnName] sysname NOT NULL,
+        [DataType] sysname NOT NULL,
+        [LengthSize] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
+    );
+
+    INSERT INTO #expected
+    (
+        SchemaName,
+        ColumnName,
+        DataType,
+        LengthSize,
+        Precision,
+        Scale
+    )
+    VALUES
+___COLUMNS___
+
+    ----- ACT ----------------------------------------------------
+
+    INSERT INTO #actual
+    (
+        ColumnName,
+        DataType,
+        LengthSize,
+        Precision,
+        Scale
+    )
+    SELECT c.name AS ColumnName,
+       st.name AS DataType,
+       c.max_length AS LengthSize,
+       c.precision AS [Precision],
+       c.scale AS Scale
+    FROM sys.columns AS c
+        INNER JOIN sys.views AS v
+            ON v.object_id = c.object_id
+        INNER JOIN sys.schemas AS s
+            ON s.schema_id = v.schema_id
+        LEFT JOIN sys.types AS st
+            ON st.user_type_id = c.user_type_id
+    WHERE v.type = 'V'
+          AND s.name = '___SCHEMA___'
+          AND t.name = '___NAME___'
+    ORDER BY t.name,
+             c.name;
+
+    ----- ASSERT -------------------------------------------------
+
+    -- Assert to have the same values
+    EXEC tSQLt.AssertEqualsTable @Expected = '#expected', @Actual = '#actual';
+
+END;
+GO

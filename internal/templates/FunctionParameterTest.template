@@ -1,0 +1,82 @@
+/*
+Description:
+
+Test if the function has the correct parameters
+
+Changes:
+Date		Who						Notes
+----------	---						--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial procedure
+*/
+CREATE PROCEDURE [TestBasic].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+    -- Create the tables
+    CREATE TABLE #actual
+    (
+        [ParameterName] NVARCHAR(128) NOT NULL,
+        [DataType] sysname NOT NULL,
+        [LengthSize] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
+    );
+
+    CREATE TABLE #expected
+    (
+        [ParameterName] NVARCHAR(128) NOT NULL,
+        [DataType] sysname NOT NULL,
+        [LengthSize] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
+    );
+
+    INSERT INTO #expected
+    (
+        ParameterName,
+        DataType,
+        LengthSize,
+        Precision,
+        Scale
+    )
+    VALUES
+___PARAMETERS___
+
+    ----- ACT ----------------------------------------------------
+
+    INSERT INTO #actual
+    (
+        ParameterName,
+        DataType,
+        LengthSize,
+        Precision,
+        Scale
+    )
+    SELECT pm.name AS ParameterName,
+        t.name AS DataType,
+        pm.max_length AS LengthSize,
+        pm.precision AS [Precision],
+		pm.scale AS Scale
+    FROM sys.parameters AS pm
+        INNER JOIN sys.sql_modules AS sm
+            ON sm.object_id = pm.object_id
+        INNER JOIN sys.objects AS o
+            ON sm.object_id = o.object_id
+        INNER JOIN sys.schemas AS s
+            ON s.schema_id = o.schema_id
+        INNER JOIN sys.types AS t
+            ON pm.system_type_id = t.system_type_id
+            AND pm.user_type_id = t.user_type_id
+    WHERE s.name = '___SCHEMA___'
+          AND ps.name = '___NAME___'
+          AND pm.NAME <> '';
+
+    ----- ASSERT -------------------------------------------------
+
+    -- Assert to have the same values
+    EXEC tSQLt.AssertEqualsTable @Expected = '#expected', @Actual = '#actual';
+
+
+END;

@@ -1,0 +1,146 @@
+function New-PSTGTableColumnTest {
+    <#
+    .SYNOPSIS
+        Function to test thee columns for a table
+
+    .DESCRIPTION
+        The function will retrieve the current columns for a table and create a test for it
+
+    .PARAMETER Table
+        Table(s) to create tests for
+
+    .PARAMETER OutputPath
+        Path to output the test to
+
+    .PARAMETER TemplateFolder
+        Path to template folder. By default the internal templates folder will be used
+
+    .PARAMETER InputObject
+        Takes the parameters required from a Table object that has been piped into the command
+
+    .PARAMETER WhatIf
+        Shows what would happen if the command were to run. No actions are actually performed.
+
+    .PARAMETER Confirm
+        Prompts you for confirmation before executing any changing operations within the command.
+
+    .PARAMETER EnableException
+        By default, when something goes wrong we try to catch it, interpret it and give you a friendly warning message.
+        This avoids overwhelming you with "sea of red" exceptions, but is inconvenient because it basically disables advanced scripting.
+        Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
+
+    .EXAMPLE
+        New-PSTGTableColumnTest -Table $table -OutputPath $OutputPath
+
+        Create a new table column test
+
+    .EXAMPLE
+        $tables | New-PSTGTableColumnTest -OutputPath $OutputPath
+
+        Create the tests using pipelines
+    #>
+
+    [CmdletBinding()]
+
+    param(
+        [parameter(ParameterSetName = "Table", Mandatory)]
+        [object[]]$Table,
+        [string]$OutputPath,
+        [string]$TemplateFolder,
+        [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
+        [object]$InputObject,
+        [switch]$EnableException
+    )
+
+    begin {
+        # Check the output path
+        if (-not $OutputPath) {
+            Stop-PSFFunction -Message "Please enter an output path"
+            return
+        }
+
+        if (-not (Test-Path -Path $OutputPath)) {
+            Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
+        }
+
+        # Check the template folder
+        if (-not $TemplateFolder) {
+            $TemplateFolder = Join-Path -Path ($script:ModuleRoot) -ChildPath "internal\templates"
+        }
+
+        if (-not (Test-Path -Path $TemplateFolder)) {
+            Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+        }
+
+        $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+        $creator = $env:username
+    }
+
+    process {
+        if (Test-PSFFunctionInterrupt) { return }
+
+        if (-not $InputObject -and -not $Table) {
+            Stop-Function -Message "You must pipe in an object or specify a Table"
+            return
+        }
+
+        if ($Table) {
+            $InputObject = $Table
+        }
+
+        if ($InputObject[0].GetType().Name -ne 'Table') {
+            Stop-Function -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
+            return
+        }
+
+        foreach ($input in $InputObject) {
+
+            $testName = "test If table $($input.Schema).$($input.Name) has the correct columns Expect Success"
+
+            # Test if the name of the test does not become too long
+            if ($testName.Length -gt 128) {
+                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+            }
+
+            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+            $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+            $creator = $env:username
+
+            # Import the template
+            try {
+                $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableColumnTest.template")
+            }
+            catch {
+                Stop-PSFFunction -Message "Could not import test template 'TableColumnTest.template'" -Target $testName -ErrorRecord $_
+            }
+
+            # Get the columns
+            $columns = $input.Columns
+
+            $columnTextCollection = @()
+
+            # Loop through the columns
+            foreach ($column in $columns) {
+                $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                $columnTextCollection += $columnText
+            }
+
+            # Replace the markers with the content
+            $script = $script.Replace("___TESTNAME___", $testName)
+            $script = $script.Replace("___SCHEMA___", $input.Schema)
+            $script = $script.Replace("___NAME___", $input.Name)
+            $script = $script.Replace("___CREATOR___", $creator)
+            $script = $script.Replace("___DATE___", $date)
+            $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+
+            # Write the test
+            try {
+                Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
+                $script | Out-File -FilePath $fileName
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+            }
+        }
+    }
+}

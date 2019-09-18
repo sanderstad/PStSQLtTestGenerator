@@ -1,0 +1,17 @@
+/*
+Description:
+Test if the ___OBJECTTYPE___ ___SCHEMA___.___NAME___ exists
+
+Changes:
+Date		Who					Notes
+----------	---					--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial test
+*/
+CREATE PROCEDURE [TestBasic].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSERT -------------------------------------------------
+    EXEC tSQLt.AssertObjectExists @ObjectName = N'___SCHEMA___.___NAME___';
+END;
