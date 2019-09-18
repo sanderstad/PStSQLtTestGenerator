@@ -139,6 +139,13 @@ function New-PSTGViewColumnTest {
                 try {
                     Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
                     $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "ViewColumn"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
                 }
                 catch {
                     Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_

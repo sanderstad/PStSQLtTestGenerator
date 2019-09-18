@@ -85,6 +85,13 @@ function New-PSTGDatabaseCollationTest {
             try {
                 Write-PSFMessage -Message "Creating collation test for '$Database'"
                 $script | Out-File -FilePath $fileName
+
+                [PSCustomObject]@{
+                    TestName = $testName
+                    Category = "DatabaseCollation"
+                    Creator  = $creator
+                    FileName = $fileName
+                }
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_

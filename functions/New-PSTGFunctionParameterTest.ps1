@@ -136,6 +136,13 @@ function New-PSTGFunctionParameterTest {
                     try {
                         Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
                         $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "FunctionParameter"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
                     }
                     catch {
                         Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_

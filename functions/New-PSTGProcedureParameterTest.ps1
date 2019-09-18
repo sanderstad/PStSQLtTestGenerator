@@ -138,6 +138,13 @@ function New-PSTGProcedureParameterTest {
                     try {
                         Write-PSFMessage -Message "Creating procedure parameter test for procedure '$($input.Schema).$($input.Name)'"
                         $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "ProcedureParameter"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
                     }
                     catch {
                         Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_

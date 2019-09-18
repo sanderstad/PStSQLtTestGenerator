@@ -138,6 +138,13 @@ function New-PSTGTableColumnTest {
                 try {
                     Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
                     $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "TableColumn"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
                 }
                 catch {
                     Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_

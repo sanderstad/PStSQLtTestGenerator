@@ -134,6 +134,13 @@ function New-PSTGObjectExistenceTest {
                 try {
                     Write-PSFMessage -Message "Creating existence test for $($ObjectType.ToLower()) '$($input.Schema).$($input.Name)'"
                     $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "ObjectExistence"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
                 }
                 catch {
                     Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
