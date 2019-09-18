@@ -40,7 +40,7 @@ function New-PSTGTableColumnTest {
         Create the tests using pipelines
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [parameter(ParameterSetName = "Table", Mandatory)]
@@ -134,12 +134,14 @@ function New-PSTGTableColumnTest {
             $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
             # Write the test
-            try {
-                Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
-                $script | Out-File -FilePath $fileName
-            }
-            catch {
-                Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Column Test")) {
+                try {
+                    Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
+                    $script | Out-File -FilePath $fileName
+                }
+                catch {
+                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                }
             }
         }
     }

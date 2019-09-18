@@ -32,7 +32,7 @@ function New-PSTGDatabaseCollationTest {
         Create a new database collation test
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [Parameter(Mandatory)][string]$Database,
@@ -81,15 +81,14 @@ function New-PSTGDatabaseCollationTest {
         $script = $script.Replace("___DATE___", $date)
 
         # Write the test
-        try {
-            Write-PSFMessage -Message "Creating collation test for '$Database'"
-            $script | Out-File -FilePath $fileName
-        }
-        catch {
-            Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+        if ($PSCmdlet.ShouldProcess("$Database", "Writing Database Collation Test")) {
+            try {
+                Write-PSFMessage -Message "Creating collation test for '$Database'"
+                $script | Out-File -FilePath $fileName
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+            }
         }
     }
-
-
-
 }

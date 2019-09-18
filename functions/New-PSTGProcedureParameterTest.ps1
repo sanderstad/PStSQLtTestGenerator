@@ -40,7 +40,7 @@ function New-PSTGProcedureParameterTest {
         Create the tests using pipelines
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [parameter(ParameterSetName = "Function", Mandatory)]
@@ -134,12 +134,14 @@ function New-PSTGProcedureParameterTest {
                 $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
 
                 # Write the test
-                try {
-                    Write-PSFMessage -Message "Creating procedure parameter test for procedure '$($input.Schema).$($input.Name)'"
-                    $script | Out-File -FilePath $fileName
-                }
-                catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Procedure Parameter Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating procedure parameter test for procedure '$($input.Schema).$($input.Name)'"
+                        $script | Out-File -FilePath $fileName
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    }
                 }
             }
             else {
