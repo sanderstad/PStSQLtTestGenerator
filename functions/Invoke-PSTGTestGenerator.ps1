@@ -166,6 +166,7 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
 
         if (-not $SkipDatabaseTests) {
+
             try {
                 # Create the collation test
                 New-PSTGDatabaseCollationTest -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -EnableException
