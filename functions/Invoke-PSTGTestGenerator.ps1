@@ -161,7 +161,6 @@ function Invoke-PSTGTestGenerator {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-
         #########################################################################
         # Create the database tests
         #########################################################################
