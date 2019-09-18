@@ -40,7 +40,7 @@ function New-PSTGFunctionParameterTest {
         Create the tests using pipelines
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [parameter(ParameterSetName = "Function", Mandatory)]
@@ -132,16 +132,25 @@ function New-PSTGFunctionParameterTest {
                 $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
 
                 # Write the test
-                try {
-                    Write-PSFMessage -Message "Creating function parameter test for function '$($Function.Schema).$($Function.Name)'"
-                    $script | Out-File -FilePath $fileName
-                }
-                catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
+                        $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "FunctionParameter"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    }
                 }
             }
             else {
-                Write-PSFMessage -Message "Function $($Function.Schema).$($Function.Name) does not have any parameters. Skipping..."
+                Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
             }
         }
     }

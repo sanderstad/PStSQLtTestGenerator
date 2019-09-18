@@ -43,7 +43,10 @@
     FunctionsToExport = 'Invoke-PSTGTestGenerator',
     'New-PSTGObjectExistenceTest',
     'New-PSTGDatabaseCollationTest',
-    'New-PSTGFunctionParameterTest'
+    'New-PSTGFunctionParameterTest',
+    'New-PSTGProcedureParameterTest',
+    'New-PSTGTableColumnTest',
+    'New-PSTGViewColumnTest'
 
     # Cmdlets to export from this module
     CmdletsToExport   = ''

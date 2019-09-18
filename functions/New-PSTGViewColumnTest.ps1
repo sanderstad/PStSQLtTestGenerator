@@ -42,7 +42,7 @@ function New-PSTGViewColumnTest {
 
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [parameter(ParameterSetName = "View", Mandatory)]
@@ -96,7 +96,7 @@ function New-PSTGViewColumnTest {
         }
 
         foreach ($input in $InputObject) {
-            $testName = "test If table $($input.Schema).$($input.Name) has the correct columns Expect Success"
+            $testName = "test If view $($input.Schema).$($input.Name) has the correct columns Expect Success"
 
             # Test if the name of the test does not become too long
             if ($testName.Length -gt 128) {
@@ -135,12 +135,21 @@ function New-PSTGViewColumnTest {
             $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
             # Write the test
-            try {
-                Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
-                $script | Out-File -FilePath $fileName
-            }
-            catch {
-                Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                try {
+                    Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
+                    $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "ViewColumn"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
+                }
+                catch {
+                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                }
             }
         }
     }

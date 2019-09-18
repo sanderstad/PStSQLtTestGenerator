@@ -48,7 +48,7 @@ function Invoke-PSTGTestGenerator {
     .PARAMETER View
         Filter out specific views that should only be processed
 
-    .PARAMETER SkipDatabaseTest
+    .PARAMETER SkipDatabaseTests
         Skip the database tests
 
     .PARAMETER SkipFunctionTests

@@ -40,7 +40,7 @@ function New-PSTGObjectExistenceTest {
         Create the tests using pipelines
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
 
     param(
         [parameter(ParameterSetName = "Object", Mandatory)]
@@ -130,12 +130,21 @@ function New-PSTGObjectExistenceTest {
             $script = $script.Replace("___DATE___", $date)
 
             # Write the test
-            try {
-                Write-PSFMessage -Message "Creating existence test for $($ObjectType.ToLower()) '$($input.Schema).$($input.Name)'"
-                $script | Out-File -FilePath $fileName
-            }
-            catch {
-                Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
+                try {
+                    Write-PSFMessage -Message "Creating existence test for $($ObjectType.ToLower()) '$($input.Schema).$($input.Name)'"
+                    $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "ObjectExistence"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
+                }
+                catch {
+                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                }
             }
         }
     }
