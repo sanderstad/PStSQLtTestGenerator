@@ -4,7 +4,7 @@
 # https://aka.ms/yaml
 
 trigger:
-- master
+- development
 
 pool:
   vmImage: 'windows-2019'
@@ -12,4 +12,4 @@ pool:
 steps:
 - task: PowerShell@2
   inputs:
-    filePath: 'build\vsts-prerequisites'
+    filePath: '**\build\vsts-prerequisites'
