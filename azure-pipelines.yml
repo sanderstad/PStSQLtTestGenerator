@@ -7,7 +7,7 @@ trigger:
 - development
 
 pool:
-  vmImage: 'windows-2019'
+  vmImage: 'Hosted Windows 2019 with VS2019'
 
 steps:
 - task: PowerShell@2
