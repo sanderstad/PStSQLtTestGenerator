@@ -12,4 +12,4 @@ pool:
 steps:
 - task: PowerShell@2
   inputs:
-    filePath: '**\build\vsts-prerequisites.ps1'
+    filePath: '**\$(Build.Repository.LocalPath)\build\vsts-prerequisites.ps1'
