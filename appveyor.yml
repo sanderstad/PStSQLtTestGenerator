@@ -26,7 +26,7 @@ before_build:
 - ps: .\build\appveyor-prerequisites.ps1
 
 
-build_script: off
+#build_script: off
 # grab appveyor lab files and needed requirements for tests in CI
 #- ps: .\build\appveyor-build.ps1
 
