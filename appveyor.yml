@@ -35,8 +35,10 @@ build_script:
 
 test_script:
 # Test with PowerShell and Pester
-#- ps: .\build\appveyor-validate.ps1
-- ps: .\build\appveyor-validate.ps1
+- ps: .\build\appveyor-validate.ps1 -IncludeCoverage
+
+# Collecting results
+- ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
 
 branches:
   only:
