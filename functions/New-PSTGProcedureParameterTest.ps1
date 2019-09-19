@@ -94,7 +94,7 @@ function New-PSTGProcedureParameterTest {
         }
 
         foreach ($input in $InputObject) {
-            $testName = "test If procedure $($input.Schema).$($input.Name) has the correct parameters Expect Success"
+            $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters Expect Success"
 
             # Test if the name of the test does not become too long
             if ($testName.Length -gt 128) {
