@@ -5,7 +5,7 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
         [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        [object[]]$knownParameters = 'Database', 'OutputPath', 'TemplateFolder', 'EnableException'
+        [object[]]$knownParameters = 'Function', 'OutputPath', 'TemplateFolder', 'InputObject', 'EnableException'
         $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
         It "Should only contain our specific parameters" {
             (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
@@ -21,18 +21,23 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
-            $server.Refresh()
         }
 
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
+
+        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
+
+        $server.Databases.Refresh()
+
+        $functions = $server.Databases[$($script:database)].UserDefinedFunctions | Where-Object IsSystemObject -eq $false
     }
 
-    Context "Create Database Collation Test" {
-        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder
+    Context "Create Function Parameter Test" {
+        $result = New-PSTGFunctionParameterTest -Function $functions -OutputPath $script:unittestfolder
 
-        $file = Get-Item -Path $result.FileName
+        $file = Get-Item -Path $result[0].FileName
 
         It "Should return a result" {
             $result | Should -Not -Be $null
@@ -43,7 +48,25 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         It "Result should have correct values" {
-            $file.FullName | Should -Be $result.FileName
+            $file.FullName | Should -Be $result[0].FileName
+        }
+    }
+
+    Context "Using Pipeline" {
+        $result = $functions | New-PSTGFunctionParameterTest -OutputPath $script:unittestfolder
+
+        $file = Get-Item -Path $result[0].FileName
+
+        It "Should return a result" {
+            $result | Should -Not -Be $null
+        }
+
+        It "Should have created a file" {
+            $file | Should -Not -Be $null
+        }
+
+        It "Result should have correct values" {
+            $file.FullName | Should -Be $result[0].FileName
         }
     }
 
@@ -52,5 +75,4 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
         $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
-
 }

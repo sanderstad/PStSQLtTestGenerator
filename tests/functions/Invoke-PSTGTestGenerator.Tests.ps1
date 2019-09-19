@@ -5,7 +5,7 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
         [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        [object[]]$knownParameters = 'Database', 'OutputPath', 'TemplateFolder', 'EnableException'
+        [object[]]$knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'OutputPath', 'TemplateFolder', 'Function', 'Procedure', 'Table', 'View', 'SkipDatabaseTests', 'SkipFunctionTests', 'SkipProcedureTests', 'SkipTableTests', 'SkipViewTests', 'EnableException'
         $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
         It "Should only contain our specific parameters" {
             (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
@@ -21,18 +21,21 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
-            $server.Refresh()
         }
 
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
+
+        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
     }
 
-    Context "Create Database Collation Test" {
-        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder
+    Context "Create Tests" {
+        $result = Invoke-PSTGTestGenerator -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder
 
-        $file = Get-Item -Path $result.FileName
+        $files = Get-ChildItem -Path $script:unittestfolder
+
+        $file = Get-Item -Path $result[0].FileName
 
         It "Should return a result" {
             $result | Should -Not -Be $null
@@ -42,8 +45,12 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
             $file | Should -Not -Be $null
         }
 
+        it "Should have all the tests" {
+            $files.Count | Should -Be 10
+        }
+
         It "Result should have correct values" {
-            $file.FullName | Should -Be $result.FileName
+            $file.FullName | Should -Be $result[0].FileName
         }
     }
 
