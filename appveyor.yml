@@ -33,7 +33,8 @@ build_script:
 
 test_script:
 # Test with PowerShell and Pester
-- ps: .\build\appveyor-validate.ps1
+#- ps: .\build\appveyor-validate.ps1
+- ps: .\tests\pester.ps1
 
 branches:
   only:
