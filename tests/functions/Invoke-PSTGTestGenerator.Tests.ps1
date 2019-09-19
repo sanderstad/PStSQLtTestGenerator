@@ -27,7 +27,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
 
-        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
+        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "database.sql"
     }
 
     Context "Create Tests" {
@@ -57,7 +57,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     AfterAll {
         $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }
