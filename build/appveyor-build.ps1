@@ -13,7 +13,7 @@ Write-PSFMessage -Level Important -Message "Creating and populating publishing d
 
 $publishDir = New-Item -Path "C:\Projects" -Name publish -ItemType Directory
 
-Copy-Item -Path "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force #>
+Copy-Item -Path "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force
 
 # Create commands.ps1
 $text = @()

@@ -13,6 +13,10 @@ cache:
 
 shallow_clone: true
 
+branches:
+  only:
+    - development
+
 environment:
   workingfolder: c:\projects\PStSQLtTestGenerator
   environment: development
@@ -25,14 +29,6 @@ matrix:
 before_build:
 - ps: .\build\appveyor-prerequisites.ps1
 
-
-#build_script: off
-# grab appveyor lab files and needed requirements for tests in CI
-#- ps: .\build\appveyor-build.ps1
-
-#before_test:
-#- icacls "c:\projects\PSDatabaseClone" /grant Everyone:(OI)(CI)F /T /Q
-
 test_script:
 # Test with PowerShell and Pester
 - ps: .\build\appveyor-validate.ps1 -IncludeCoverage
@@ -40,9 +36,8 @@ test_script:
 # Collecting results
 - ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
 
-branches:
-  only:
-    - development
+after_test:
+- ps: .\build\appveyor-build.ps1
 
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
