@@ -1,4 +1,6 @@
 # See http://www.appveyor.com/docs/appveyor-yml for many more options
+image: Visual Studio 2019
+
 version: 0.3.{build}
 
 cache:
