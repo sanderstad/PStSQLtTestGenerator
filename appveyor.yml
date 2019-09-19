@@ -28,7 +28,7 @@ before_build:
 
 build_script:
 # grab appveyor lab files and needed requirements for tests in CI
-- ps: .\build\appveyor-build.ps1
+#- ps: .\build\appveyor-build.ps1
 
 #before_test:
 #- icacls "c:\projects\PSDatabaseClone" /grant Everyone:(OI)(CI)F /T /Q
