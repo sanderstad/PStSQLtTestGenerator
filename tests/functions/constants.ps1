@@ -7,7 +7,7 @@ else {
     $script:computer = "localhost"
     $script:instance = "localhost"
     $script:database = "UnitTesting_Tests"
-    $script:tempfolder = "C:\temp\"
+    $script:tempfolder = "C:\projects\"
     $script:unittestfolder = (Join-Path -Path $script:tempfolder -ChildPath "unittests")
 }
 
