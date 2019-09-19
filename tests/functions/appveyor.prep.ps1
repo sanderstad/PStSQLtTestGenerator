@@ -1,7 +1,7 @@
 Add-AppveyorTest -Name "appveyor.prep" -Framework NUnit -FileName "appveyor.prep.ps1" -Outcome Running
 $sw = [system.diagnostics.stopwatch]::startNew()
-Write-Host -Object "appveyor.prep: Cloning lab materials"  -ForegroundColor DarkGreen
-git clone -q --branch=master --depth=1 https://github.com/sanderstad/PStSQLtTestGenerator.git C:\github\appveyor-lab
+<# Write-Host -Object "appveyor.prep: Cloning lab materials"  -ForegroundColor DarkGreen
+git clone -q --branch=master --depth=1 https://github.com/sanderstad/PStSQLtTestGenerator.git C:\github\appveyor-lab #>
 
 #Get codecov (to upload coverage results)
 Write-Host -Object "appveyor.prep: Install codecov" -ForegroundColor DarkGreen
