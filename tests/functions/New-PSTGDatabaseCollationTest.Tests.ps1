@@ -16,23 +16,41 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     BeforeAll {
-        $query = "CREATE DATABASE $($script:database)"
-        Invoke-DbaQuery -SqlInstance $script:instance -Database master -Query $query
+        $server = Connect-DbaInstance -SqlInstance $script:instance
+
+        if ($server.Databases.Name -notcontains $script:database) {
+            $query = "CREATE DATABASE $($script:database)"
+            $server.Query($query)
+            $server.Refresh()
+        }
+
+        if (-not (Test-Path -Path $script:unittestfolder)) {
+            $null = New-Item -Path $script:unittestfolder -ItemType Directory
+        }
     }
 
     Context "Create Database Collation Test" {
         $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder
 
-        $file = Get-Item -Path (Join-Path $script:unittestingfolder -ChildPath "test If database has correct collation Expect Success.sql")
-        $file
+        $file = Get-Item -Path $result.FileName
+
+        It "Should return a result" {
+            $result | Should -Not -Be $null
+        }
+
         It "Should have created a file" {
             $file | Should -Not -Be $null
         }
 
+        It "Result should have correct values" {
+            $file.FullName | Should -Be $result.FileName
+        }
     }
 
     AfterAll {
-        Remove-DbaDatabase -SqlInstance $script:instance1 -Name $script:database
+        $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
+
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }
