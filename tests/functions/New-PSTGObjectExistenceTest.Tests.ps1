@@ -38,7 +38,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         $objects += $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
     }
 
-    Context "Create Function Parameter Test" {
+    Context "Create Object Existence Test" {
         $result = New-PSTGObjectExistenceTest -Object $objects -OutputPath $script:unittestfolder
 
         $file = Get-Item -Path $result[0].FileName
