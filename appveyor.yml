@@ -26,7 +26,7 @@ environment:
 matrix:
   fast_finish: true
 
-before_build:
+before_test:
 - ps: .\build\appveyor-prerequisites.ps1
 
 test_script:
