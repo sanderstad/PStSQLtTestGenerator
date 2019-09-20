@@ -56,11 +56,9 @@ function New-PSTGProcedureParameterTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "Procedure", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [parameter(ParameterSetName = "Procedure", Mandatory)]
         [string[]]$Procedure,
         [string]$OutputPath,
         [string]$TemplateFolder,

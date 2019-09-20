@@ -56,11 +56,9 @@ function New-PSTGObjectExistenceTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "Object", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [parameter(ParameterSetName = "Object", Mandatory)]
         [string[]]$Object,
         [string]$OutputPath,
         [string]$TemplateFolder,

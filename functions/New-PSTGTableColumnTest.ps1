@@ -56,11 +56,9 @@ function New-PSTGTableColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "Table", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [parameter(ParameterSetName = "Table", Mandatory)]
         [string[]]$Table,
         [string]$OutputPath,
         [string]$TemplateFolder,

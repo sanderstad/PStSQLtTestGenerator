@@ -58,11 +58,9 @@ function New-PSTGViewColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "View", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [parameter(ParameterSetName = "View", Mandatory)]
         [string[]]$View,
         [string]$OutputPath,
         [string]$TemplateFolder,
