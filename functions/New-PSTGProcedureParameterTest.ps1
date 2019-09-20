@@ -127,10 +127,10 @@ function New-PSTGProcedureParameterTest {
         }
 
         if ($Procedure) {
-            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name | Where-Object Name -in $Procedure
+            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $Procedure
         }
         else {
-            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {

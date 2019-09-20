@@ -127,10 +127,10 @@ function New-PSTGFunctionParameterTest {
         }
 
         if ($Function) {
-            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name | Where-Object Name -in $Function
+            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters | Where-Object Name -in $Function
         }
         else {
-            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {
