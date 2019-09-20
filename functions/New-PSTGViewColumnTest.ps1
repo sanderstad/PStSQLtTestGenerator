@@ -122,7 +122,7 @@ function New-PSTGViewColumnTest {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $View) {
+        if (-not $InputObject -and -not $View -and -not $SqlInstance) {
             Stop-PSFFunction -Message "You must pipe in an object or specify a View"
             return
         }

@@ -120,7 +120,7 @@ function New-PSTGTableColumnTest {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $Table) {
+        if (-not $InputObject -and -not $Table -and -not $SqlInstance) {
             Stop-PSFFunction -Message "You must pipe in an object or specify a Table"
             return
         }

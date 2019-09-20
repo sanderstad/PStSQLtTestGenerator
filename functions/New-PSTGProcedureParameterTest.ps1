@@ -120,7 +120,7 @@ function New-PSTGProcedureParameterTest {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $Procedure) {
+        if (-not $InputObject -and -not $Procedure -and -not $SqlInstance) {
             Stop-PSFFunction -Message "You must pipe in an object or specify a Procedure"
             return
         }

@@ -120,7 +120,7 @@ function New-PSTGFunctionParameterTest {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $Function) {
+        if (-not $InputObject -and -not $Function -and -not $SqlInstance) {
             Stop-PSFFunction -Message "You must pipe in an object or specify a Function"
             return
         }
