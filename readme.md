@@ -1,5 +1,4 @@
 ﻿[![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator)
-[![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator)
 
 [![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i/branch/development?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator/branch/development)
 
