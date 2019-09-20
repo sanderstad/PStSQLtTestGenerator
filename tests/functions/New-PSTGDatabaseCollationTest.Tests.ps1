@@ -43,14 +43,14 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         It "Result should have correct values" {
-            $file.FullName | Should -Be $result.FileName
+            $result.FileName | Should -Be $file.FullName
         }
     }
 
     AfterAll {
         #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false -EnableException
 
-        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }

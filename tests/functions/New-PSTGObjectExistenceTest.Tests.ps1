@@ -77,6 +77,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     AfterAll {
         #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 }
