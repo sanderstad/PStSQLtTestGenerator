@@ -29,19 +29,22 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
+    $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
+    $file = Get-Item -Path $result.FileName
+
     Context "Create Database Collation Test" {
-        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
-        $result
-        $file = Get-Item -Path $result.FileName
-        $file
+
         It "Should return a result" {
             $result | Should -Not -Be $null
         }
+    }
 
-        It "Should have created a file" {
-            $file | Should -Not -Be $null
-        }
+    Context "Test 1"
+    It "Should have created a file" {
+        $file | Should -Not -Be $null
+    }
 
+    Context "Test 2" {
         It "Result should have correct values" {
             $result.FileName | Should -Be $file.FullName
         }
