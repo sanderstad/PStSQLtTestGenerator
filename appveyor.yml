@@ -26,7 +26,10 @@ environment:
 matrix:
   fast_finish: true
 
-before_test:
+build_script:
+- ps: .\build\appveyor-build.ps1
+
+before_build:
 - ps: .\build\appveyor-prerequisites.ps1
 
 test_script:
@@ -35,9 +38,6 @@ test_script:
 
 # Collecting results
 - ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
-
-after_test:
-- ps: .\build\appveyor-build.ps1
 
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
