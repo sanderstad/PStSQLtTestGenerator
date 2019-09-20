@@ -121,7 +121,7 @@ function New-PSTGTableColumnTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         if (-not $InputObject -and -not $Table) {
-            Stop-PSFunction -Message "You must pipe in an object or specify a Table"
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Table"
             return
         }
 
@@ -132,7 +132,7 @@ function New-PSTGTableColumnTest {
         }
 
         if ($InputObject[0].GetType().Name -ne 'Table') {
-            Stop-PSFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
+            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
             return
         }
 

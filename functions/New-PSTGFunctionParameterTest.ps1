@@ -121,7 +121,7 @@ function New-PSTGFunctionParameterTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         if (-not $InputObject -and -not $Function) {
-            Stop-PSFunction -Message "You must pipe in an object or specify a Function"
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Function"
             return
         }
 
@@ -132,7 +132,7 @@ function New-PSTGFunctionParameterTest {
         }
 
         if ($InputObject[0].GetType().Name -ne 'UserDefinedFunction') {
-            Stop-PSFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
+            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
             return
         }
 

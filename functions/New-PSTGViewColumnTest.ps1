@@ -123,7 +123,7 @@ function New-PSTGViewColumnTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         if (-not $InputObject -and -not $View) {
-            Stop-PSFunction -Message "You must pipe in an object or specify a View"
+            Stop-PSFFunction -Message "You must pipe in an object or specify a View"
             return
         }
 
@@ -134,7 +134,7 @@ function New-PSTGViewColumnTest {
         }
 
         if ($InputObject[0].GetType().Name -ne 'View') {
-            Stop-PSFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
+            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
             return
         }
 

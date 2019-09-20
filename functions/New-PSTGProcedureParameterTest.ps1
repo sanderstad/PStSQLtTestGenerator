@@ -121,7 +121,7 @@ function New-PSTGProcedureParameterTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         if (-not $InputObject -and -not $Procedure) {
-            Stop-PSFunction -Message "You must pipe in an object or specify a Procedure"
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Procedure"
             return
         }
 
@@ -132,7 +132,7 @@ function New-PSTGProcedureParameterTest {
         }
 
         if ($InputObject[0].GetType().Name -ne 'StoredProcedure') {
-            Stop-PSFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
+            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
             return
         }
 
