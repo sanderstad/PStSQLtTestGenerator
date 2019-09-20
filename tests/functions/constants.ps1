@@ -1,7 +1,7 @@
 # constants
-if (Test-Path C:\temp\constants.ps1) {
+if (Test-Path C:\temp\constants_pstsqlttestgenerator.ps1) {
     Write-Verbose "C:\temp\constants.ps1 found."
-    . C:\temp\constants.ps1
+    . C:\temp\constants_pstsqlttestgenerator.ps1
 }
 else {
     $script:computer = "localhost"
