@@ -11,8 +11,8 @@ cache:
 - C:\Program Files\WindowsPowerShell\Modules\PSFramework -> appveyor.yml
 - C:\Program Files\WindowsPowerShell\Modules\dbatools -> appveyor.yml
 
-clone_folder: c:\projects\PStSQLtTestGenerator
-clone_depth: 100
+#clone_folder: c:\projects\PStSQLtTestGenerator
+#clone_depth: 100
 shallow_clone: true
 
 branches:
