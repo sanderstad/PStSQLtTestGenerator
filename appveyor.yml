@@ -25,6 +25,9 @@ environment:
   version: 0.3.$(appveyor_build_number)
   appveyor_rdp_password: P$tSQLtTestG3nerator
 
+services:
+  - mssql2017
+
 matrix:
   fast_finish: true
 
