@@ -31,9 +31,9 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     Context "Create Database Collation Test" {
         $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
-
+        $result
         $file = Get-Item -Path $result.FileName
-
+        $file
         It "Should return a result" {
             $result | Should -Not -Be $null
         }
