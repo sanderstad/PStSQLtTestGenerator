@@ -11,5 +11,17 @@ Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
 
 . "$PSScriptRoot\appveyor-constants.ps1"
 
+Write-PSFMessage -Level Host -Message "Setup $database Database"
+$server = Connect-DbaInstance -SqlInstance $instance
+
+if ($server.Databases.Name -notcontains $database) {
+    $query = "CREATE DATABASE $($database)"
+    $server.Query($query)
+
+    Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\database.sql"
+
+    $server.Databases.Refresh()
+}
+
 $sw.Stop()
 Update-AppveyorTest -Name "appveyor-prerequisites" -Framework NUnit -FileName "appveyor-prerequisites.ps1" -Outcome Passed -Duration $sw.ElapsedMilliseconds
