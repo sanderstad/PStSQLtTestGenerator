@@ -27,11 +27,14 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
+
+        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
+        Write-PSFMessage -Level Host -Message "`$result = New-PSTGDatabaseCollationTest -Database `$script:database -OutputPath `$script:unittestfolder -EnableException"
+        Write-PSFMessage -Message "Result`n$result" -Level Host
+        $file = Get-Item -Path $result.FileName
     }
 
-    $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
-    Write-Host "Result`n$result"
-    $file = Get-Item -Path $result.FileName
+
 
     Context "Create Database Collation Test" {
 
