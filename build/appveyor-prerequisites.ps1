@@ -11,7 +11,7 @@ Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
 
 . "$PSScriptRoot\appveyor-constants.ps1"
 
-Write-PSFMessage -Level Host -Message "Create Unit Tests Folder"
+Write-PSFMessage -Level Host -Message "Create Unit Test Folder"
 if (-not (Test-Path -Path $unittestfolder)) {
     $null = New-Item -Path $unittestfolder -ItemType Directory
 }
