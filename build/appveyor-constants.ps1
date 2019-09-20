@@ -1,5 +1,3 @@
-﻿# constants
-#$publishDir = "C:\Projects"
-$workingfolder = "C:\projects\pstsqlttestgenerator"
-$sqlinstance = "localhost\SQL2017"
+﻿$computer = "localhost"
+$instance = "localhost\SQL2017"
 $database = "UnitTesting_Tests"
