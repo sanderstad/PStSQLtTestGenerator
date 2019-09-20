@@ -30,7 +30,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
-    $result
+    Write-Host "Result`n$result"
     $file = Get-Item -Path $result.FileName
 
     Context "Create Database Collation Test" {
