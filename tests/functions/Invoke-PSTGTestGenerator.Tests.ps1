@@ -21,13 +21,15 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
+
+            Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$($PSScriptRoot)\database.sql"
         }
 
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
 
-        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$($PSScriptRoot)\database.sql"
+
     }
 
     Context "Create Tests" {
