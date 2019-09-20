@@ -12,7 +12,7 @@ Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
 . "$PSScriptRoot\appveyor-constants.ps1"
 
 Write-PSFMessage -Level Host -Message "Setup $database Database"
-$server = Connect-DbaInstance -SqlInstance $instance
+$server = Connect-DbaInstance -SqlInstance $sqlinstance
 
 if ($server.Databases.Name -notcontains $database) {
     $query = "CREATE DATABASE $($database)"
