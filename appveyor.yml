@@ -26,11 +26,13 @@ environment:
 matrix:
   fast_finish: true
 
-build_script:
-- ps: .\build\appveyor-build.ps1
-
 before_build:
 - ps: .\build\appveyor-prerequisites.ps1
+
+#build_script:
+#- ps: .\build\appveyor-build.ps1
+
+build: off
 
 test_script:
 # Test with PowerShell and Pester
