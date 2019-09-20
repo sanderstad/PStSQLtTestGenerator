@@ -34,8 +34,11 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         $functions = $server.Databases[$($script:database)].UserDefinedFunctions | Where-Object IsSystemObject -eq $false
     }
 
+
+
     Context "Create Function Parameter Test" {
-        $result = New-PSTGFunctionParameterTest -SqlInstance $script:instance -Database $script:database -Function $functions -OutputPath $script:unittestfolder -EnableException
+        $result = @()
+        $result = New-PSTGFunctionParameterTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -53,7 +56,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $functions | New-PSTGFunctionParameterTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+        $result = @()
+        $result += $functions.Name | New-PSTGFunctionParameterTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
