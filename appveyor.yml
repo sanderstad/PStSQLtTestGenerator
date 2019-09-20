@@ -11,6 +11,8 @@ cache:
 - C:\Program Files\WindowsPowerShell\Modules\PSFramework -> appveyor.yml
 - C:\Program Files\WindowsPowerShell\Modules\dbatools -> appveyor.yml
 
+clone_folder: c:\github\dbatools
+clone_depth: 100
 shallow_clone: true
 
 branches:
@@ -26,7 +28,7 @@ environment:
 matrix:
   fast_finish: true
 
-before_build:
+before_test:
 - ps: .\build\appveyor-prerequisites.ps1
 
 #build_script:
