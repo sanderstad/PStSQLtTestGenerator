@@ -35,7 +35,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create View Column Test" {
-        $result = New-PSTGViewColumnTest -View $views -OutputPath $script:unittestfolder
+        $result = New-PSTGViewColumnTest -View $views -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -53,7 +53,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $views | New-PSTGViewColumnTest -OutputPath $script:unittestfolder
+        $result = $views | New-PSTGViewColumnTest -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 

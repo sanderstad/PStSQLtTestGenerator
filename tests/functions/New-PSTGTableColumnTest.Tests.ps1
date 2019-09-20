@@ -35,7 +35,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Table Column Test" {
-        $result = New-PSTGTableColumnTest -Table $tables -OutputPath $script:unittestfolder
+        $result = New-PSTGTableColumnTest -Table $tables -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -53,7 +53,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $tables | New-PSTGTableColumnTest -OutputPath $script:unittestfolder
+        $result = $tables | New-PSTGTableColumnTest -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 

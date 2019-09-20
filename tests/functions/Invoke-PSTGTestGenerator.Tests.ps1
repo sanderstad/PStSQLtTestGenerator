@@ -33,7 +33,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Tests" {
-        $result = Invoke-PSTGTestGenerator -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder
+        $result = Invoke-PSTGTestGenerator -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $files = Get-ChildItem -Path $script:unittestfolder
 

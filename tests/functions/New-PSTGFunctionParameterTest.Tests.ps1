@@ -35,7 +35,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Function Parameter Test" {
-        $result = New-PSTGFunctionParameterTest -Function $functions -OutputPath $script:unittestfolder
+        $result = New-PSTGFunctionParameterTest -Function $functions -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -53,7 +53,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $functions | New-PSTGFunctionParameterTest -OutputPath $script:unittestfolder
+        $result = $functions | New-PSTGFunctionParameterTest -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 

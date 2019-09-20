@@ -30,7 +30,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Database Collation Test" {
-        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder
+        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result.FileName
 
@@ -48,7 +48,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
+        $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false -EnableException
 
         #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }

@@ -39,7 +39,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Object Existence Test" {
-        $result = New-PSTGObjectExistenceTest -Object $objects -OutputPath $script:unittestfolder
+        $result = New-PSTGObjectExistenceTest -Object $objects -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -57,7 +57,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $objects | New-PSTGObjectExistenceTest -OutputPath $script:unittestfolder
+        $result = $objects | New-PSTGObjectExistenceTest -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
