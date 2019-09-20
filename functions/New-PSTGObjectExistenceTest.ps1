@@ -117,7 +117,7 @@ function New-PSTGObjectExistenceTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         if ($Object) {
-            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $Object -and
+            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $Object
             $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
             $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
             $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
