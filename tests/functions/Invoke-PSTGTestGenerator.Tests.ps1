@@ -28,8 +28,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-
     }
 
     Context "Create Tests" {
@@ -59,7 +57,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     AfterAll {
         #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }
