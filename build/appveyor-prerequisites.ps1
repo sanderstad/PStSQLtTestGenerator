@@ -11,7 +11,12 @@ Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
 
 . "$PSScriptRoot\appveyor-constants.ps1"
 
-Write-PSFMessage -Level Host -Message "Setup $database Database"
+Write-PSFMessage -Level Host -Message "Create Unit Tests Folder"
+if (-not (Test-Path -Path $unittestfolder)) {
+    $null = New-Item -Path $unittestfolder -ItemType Directory
+}
+
+Write-PSFMessage -Level Host -Message "Setup Database"
 $server = Connect-DbaInstance -SqlInstance $instance
 
 if ($server.Databases.Name -notcontains $database) {
