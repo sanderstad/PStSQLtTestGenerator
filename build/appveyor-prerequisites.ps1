@@ -20,6 +20,7 @@ if ($server.Databases.Name -notcontains $database) {
 
     Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\..\tests\functions\database.sql"
 
+    $server.Refresh()
     $server.Databases.Refresh()
 
     if ($server.Databases[$database].Tables.Name -notcontains 'Person') {
