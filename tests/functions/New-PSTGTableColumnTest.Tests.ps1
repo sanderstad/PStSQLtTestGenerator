@@ -30,8 +30,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        $tables = $server.Databases[$($script:database)].Tables
     }
 
     Context "Create Table Column Test" {
@@ -56,6 +54,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     Context "Using Pipeline" {
         $result = @()
         $result += $tables.Name | New-PSTGTableColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+
+        $tables = $server.Databases[$($script:database)].Tables
 
         $file = Get-Item -Path $result[0].FileName
 

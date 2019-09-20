@@ -30,8 +30,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        $views = $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
     }
 
     Context "Create View Column Test" {
@@ -56,6 +54,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     Context "Using Pipeline" {
         $result = @()
         $result += $views.Name | New-PSTGViewColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+
+        $views = $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
 
         $file = Get-Item -Path $result[0].FileName
 

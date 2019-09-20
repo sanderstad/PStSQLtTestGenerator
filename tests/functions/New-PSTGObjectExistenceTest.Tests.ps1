@@ -30,12 +30,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        $objects = @()
-        $objects += $server.Databases[$($script:database)].StoredProcedures | Where-Object IsSystemObject -eq $false
-        $objects += $server.Databases[$($script:database)].Tables
-        $objects += $server.Databases[$($script:database)].UserDefinedFunctions | Where-Object IsSystemObject -eq $false
-        $objects += $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
     }
 
     Context "Create Object Existence Test" {
@@ -60,6 +54,12 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     Context "Using Pipeline" {
         $result = @()
         $result += $objects.Name | New-PSTGObjectExistenceTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+
+        $objects = @()
+        $objects += $server.Databases[$($script:database)].StoredProcedures | Where-Object IsSystemObject -eq $false
+        $objects += $server.Databases[$($script:database)].Tables
+        $objects += $server.Databases[$($script:database)].UserDefinedFunctions | Where-Object IsSystemObject -eq $false
+        $objects += $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
 
         $file = Get-Item -Path $result[0].FileName
 

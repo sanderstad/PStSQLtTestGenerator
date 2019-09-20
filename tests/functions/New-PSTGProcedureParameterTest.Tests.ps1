@@ -30,8 +30,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        $procedures = $server.Databases[$($script:database)].StoredProcedures | Where-Object IsSystemObject -eq $false
     }
 
     Context "Create Stored Procedure Parameter Test" {
@@ -56,6 +54,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     Context "Using Pipeline" {
         $result = @()
         $result += $procedures.Name | New-PSTGProcedureParameterTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+
+        $procedures = $server.Databases[$($script:database)].StoredProcedures | Where-Object IsSystemObject -eq $false
 
         $file = Get-Item -Path $result[0].FileName
 
