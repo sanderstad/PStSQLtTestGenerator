@@ -6,6 +6,19 @@ function New-PSTGProcedureParameterTest {
     .DESCRIPTION
         The function will collect the parameter(s) of the procedure(s) and create the test
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Accepts PowerShell credentials (Get-Credential).
+
+        Windows Authentication, SQL Server Authentication, Active Directory - Password, and Active Directory - Integrated are all supported.
+
+        For MFA support, please use Connect-DbaInstance.
+
+    .PARAMETER Database
+        The database or databases to add.
+
     .PARAMETER Procedure
         Procedure(s) to create tests for
 
@@ -43,16 +56,30 @@ function New-PSTGProcedureParameterTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
+        [DbaInstanceParameter]$SqlInstance,
+        [pscredential]$SqlCredential,
+        [string]$Database,
         [parameter(ParameterSetName = "Function", Mandatory)]
-        [object[]]$Procedure,
+        [string[]]$Procedure,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
 
     begin {
+        # Check parameters
+        if (-not $SqlInstance) {
+            Stop-PSFFunction -Message "Please enter a SQL Server instance" -Target $SqlInstance
+            return
+        }
+
+        if (-not $Database) {
+            Stop-PSFFunction -Message "Please enter a database" -Target $Database
+            return
+        }
+
         # Check the output path
         if (-not $OutputPath) {
             Stop-PSFFunction -Message "Please enter an output path"
@@ -74,6 +101,20 @@ function New-PSTGProcedureParameterTest {
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
         $creator = $env:username
+
+        # Connect to the server
+        try {
+            $server = Connect-DbaInstance -SqlInstance $Sqlinstance -SqlCredential $SqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to '$Sqlinstance'" -Target $Sqlinstance -ErrorRecord $_ -Category ConnectionError
+            return
+        }
+
+        # Check if the database exists
+        if ($Database -notin $server.Databases.Name) {
+            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+        }
     }
 
     process {
@@ -84,8 +125,10 @@ function New-PSTGProcedureParameterTest {
             return
         }
 
+        $InputObject = $server.Databases[$Database].StoredProcedure | Where-Object IsSystemObject -eq $false
+
         if ($Procedure) {
-            $InputObject = $Procedure
+            $InputObject = $InputObject | Where-Object Name -in $Procedure
         }
 
         if ($InputObject[0].GetType().Name -ne 'StoredProcedure') {

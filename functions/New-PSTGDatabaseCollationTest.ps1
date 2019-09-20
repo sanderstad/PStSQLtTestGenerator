@@ -6,8 +6,18 @@ function New-PSTGDatabaseCollationTest {
     .DESCRIPTION
         The function will lookup the current collation of the database and create a test with that value
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Accepts PowerShell credentials (Get-Credential).
+
+        Windows Authentication, SQL Server Authentication, Active Directory - Password, and Active Directory - Integrated are all supported.
+
+        For MFA support, please use Connect-DbaInstance.
+
     .PARAMETER Database
-        Name of the database to create the test for
+        The database or databases to add.
 
     .PARAMETER OutputPath
         Path to output the test to
@@ -35,13 +45,26 @@ function New-PSTGDatabaseCollationTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [Parameter(Mandatory)][string]$Database,
+        [DbaInstanceParameter]$SqlInstance,
+        [pscredential]$SqlCredential,
+        [string]$Database,
         [Parameter(Mandatory)][string]$OutputPath,
         [string]$TemplateFolder,
         [switch]$EnableException
     )
 
     begin {
+        # Check parameters
+        if (-not $SqlInstance) {
+            Stop-PSFFunction -Message "Please enter a SQL Server instance" -Target $SqlInstance
+            return
+        }
+
+        if (-not $Database) {
+            Stop-PSFFunction -Message "Please enter a database" -Target $Database
+            return
+        }
+
         $testName = "test If database has correct collation Expect Success"
 
         # Test if the name of the test does not become too long
@@ -59,6 +82,20 @@ function New-PSTGDatabaseCollationTest {
 
         if (-not (Test-Path -Path $TemplateFolder)) {
             Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+        }
+
+        # Connect to the server
+        try {
+            $server = Connect-DbaInstance -SqlInstance $Sqlinstance -SqlCredential $SqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to '$Sqlinstance'" -Target $Sqlinstance -ErrorRecord $_ -Category ConnectionError
+            return
+        }
+
+        # Check if the database exists
+        if ($Database -notin $server.Databases.Name) {
+            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
         }
     }
 

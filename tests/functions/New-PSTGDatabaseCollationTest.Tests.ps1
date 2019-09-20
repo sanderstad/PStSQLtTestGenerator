@@ -28,27 +28,26 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
 
-        $result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath $script:unittestfolder -EnableException
-        Write-PSFMessage -Level Host -Message "`$result = New-PSTGDatabaseCollationTest -Database `$script:database -OutputPath `$script:unittestfolder -EnableException"
-        Write-PSFMessage -Message "Result`n$result" -Level Host
-        $file = Get-Item -Path $result.FileName
+
     }
 
-
-
     Context "Create Database Collation Test" {
+
+        $result = New-PSTGDatabaseCollationTest -Database "$script:database" -OutputPath "$script:unittestfolder" -EnableException
+        $result | gm
+        Write-PSFMessage -Level Host -Message "`$result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath '$script:unittestfolder' -EnableException"
+        Write-PSFMessage -Message "Result`n$result" -Level Host
+        $file = Get-Item -Path $result.FileName
 
         It "Should return a result" {
             $result | Should -Not -Be $null
         }
-    }
 
-    Context "Test 1"
-    It "Should have created a file" {
-        $file | Should -Not -Be $null
-    }
+        It "Should have created a file" {
+            $file | Should -Not -Be $null
+        }
 
-    Context "Test 2" {
+
         It "Result should have correct values" {
             $result.FileName | Should -Be $file.FullName
         }
