@@ -5,7 +5,7 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
         [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        [object[]]$knownParameters = 'Database', 'OutputPath', 'TemplateFolder', 'EnableException'
+        [object[]]$knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'OutputPath', 'TemplateFolder', 'EnableException'
         $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
         It "Should only contain our specific parameters" {
             (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
@@ -33,10 +33,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     Context "Create Database Collation Test" {
 
-        $result = New-PSTGDatabaseCollationTest -Database "$script:database" -OutputPath "$script:unittestfolder" -EnableException
-        $result | gm
-        Write-PSFMessage -Level Host -Message "`$result = New-PSTGDatabaseCollationTest -Database $script:database -OutputPath '$script:unittestfolder' -EnableException"
-        Write-PSFMessage -Message "Result`n$result" -Level Host
+        $result = New-PSTGDatabaseCollationTest -SqlInstance $script:instance -Database $script:database -OutputPath "$script:unittestfolder" -EnableException
         $file = Get-Item -Path $result.FileName
 
         It "Should return a result" {

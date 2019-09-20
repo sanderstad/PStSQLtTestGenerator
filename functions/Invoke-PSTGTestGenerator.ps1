@@ -247,7 +247,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the table existence tests
             try {
-                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database --OutputPath $OutputPath -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table existence tests" -Target $Database -ErrorRecord $_
