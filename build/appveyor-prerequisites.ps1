@@ -21,6 +21,11 @@ if ($server.Databases.Name -notcontains $database) {
     Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\..\tests\functions\database.sql"
 
     $server.Databases.Refresh()
+
+    if ($server.Databases[$database].Tables.Name -notcontains 'Person') {
+        Stop-PSFFunction -Message "Database creation unsuccessful!"
+        return
+    }
 }
 
 $sw.Stop()
