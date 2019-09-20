@@ -48,7 +48,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         it "Should have all the tests" {
-            $files.Count | Should -Be 10
+            $files.Count | Should -Be 12
         }
 
         It "Result should have correct values" {
@@ -59,7 +59,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     AfterAll {
         #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }
