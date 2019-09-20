@@ -56,6 +56,7 @@ function New-PSTGFunctionParameterTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
+        [parameter(ParameterSetName = "Function", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
@@ -125,15 +126,11 @@ function New-PSTGFunctionParameterTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].UserDefinedFunction | Where-Object IsSystemObject -eq $false
-
         if ($Function) {
-            $InputObject = $InputObject | Where-Object Name -in $Function
+            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name | Where-Object Name -in $Function
         }
-
-        if ($InputObject[0].GetType().Name -ne 'UserDefinedFunction') {
-            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
+        else {
+            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {

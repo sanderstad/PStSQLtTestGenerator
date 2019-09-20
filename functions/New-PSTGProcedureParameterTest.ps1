@@ -56,10 +56,11 @@ function New-PSTGProcedureParameterTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
+        [parameter(ParameterSetName = "Procedure", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [parameter(ParameterSetName = "Function", Mandatory)]
+        [parameter(ParameterSetName = "Procedure", Mandatory)]
         [string[]]$Procedure,
         [string]$OutputPath,
         [string]$TemplateFolder,
@@ -125,15 +126,11 @@ function New-PSTGProcedureParameterTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].StoredProcedure | Where-Object IsSystemObject -eq $false
-
         if ($Procedure) {
-            $InputObject = $InputObject | Where-Object Name -in $Procedure
+            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name | Where-Object Name -in $Procedure
         }
-
-        if ($InputObject[0].GetType().Name -ne 'StoredProcedure') {
-            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
+        else {
+            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {

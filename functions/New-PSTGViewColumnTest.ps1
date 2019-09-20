@@ -58,11 +58,12 @@ function New-PSTGViewColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
+        [parameter(ParameterSetName = "View", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
         [parameter(ParameterSetName = "View", Mandatory)]
-        [object]$View,
+        [string[]]$View,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -127,15 +128,11 @@ function New-PSTGViewColumnTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false
-
         if ($View) {
-            $InputObject = $InputObject | Where-Object Name -in $View
+            $InputObject = $server.Databases[$Database].Views | Where-Object Name -in $View
         }
-
-        if ($InputObject[0].GetType().Name -ne 'View') {
-            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
+        else {
+            $InputObject = $server.Databases[$Database].Views | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {

@@ -56,11 +56,12 @@ function New-PSTGTableColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
+        [parameter(ParameterSetName = "Table", Mandatory)]
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
         [parameter(ParameterSetName = "Table", Mandatory)]
-        [object[]]$Table,
+        [string[]]$Table,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -125,15 +126,10 @@ function New-PSTGTableColumnTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false
+        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name
 
         if ($Table) {
             $InputObject = $InputObject | Where-Object Name -in $Table
-        }
-
-        if ($InputObject[0].GetType().Name -ne 'Table') {
-            Stop-PSFFunction -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
         }
 
         foreach ($input in $InputObject) {
