@@ -15,12 +15,15 @@ Write-PSFMessage -Level Host -Message "Setup $database Database"
 $server = Connect-DbaInstance -SqlInstance $instance
 
 if ($server.Databases.Name -notcontains $database) {
+    # Create the database
     $query = "CREATE DATABASE $($database)"
     $server.Query($query)
 
+    # Refresh the server object
+    $server.Refresh()
+
     Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\..\tests\functions\database.sql"
 
-    $server.Refresh()
     $server.Databases.Refresh()
 
     if ($server.Databases[$database].Tables.Name -notcontains 'Person') {
