@@ -166,7 +166,7 @@ function New-PSTGObjectExistenceTest {
 
             # Replace the markers with the content
             $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___OBJECTTYPE___", $ObjectType.ToLower())
+            $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
             $script = $script.Replace("___SCHEMA___", $input.Schema)
             $script = $script.Replace("___NAME___", $input.Name)
             $script = $script.Replace("___CREATOR___", $creator)
@@ -175,7 +175,7 @@ function New-PSTGObjectExistenceTest {
             # Write the test
             if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
                 try {
-                    Write-PSFMessage -Message "Creating existence test for $($ObjectType.ToLower()) '$($input.Schema).$($input.Name)'"
+                    Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($input.Schema).$($input.Name)'"
                     $script | Out-File -FilePath $fileName
 
                     [PSCustomObject]@{
