@@ -18,7 +18,7 @@ if ($server.Databases.Name -notcontains $database) {
     $query = "CREATE DATABASE $($database)"
     $server.Query($query)
 
-    Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\database.sql"
+    Invoke-DbaQuery -SqlInstance $instance -Database $database -File "$PSScriptRoot\..\tests\functions\database.sql"
 
     $server.Databases.Refresh()
 }
