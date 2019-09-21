@@ -26,7 +26,7 @@ if (-not $WorkingDirectory) {
     if ($env:RELEASE_PRIMARYARTIFACTSOURCEALIAS) {
         $WorkingDirectory = Join-Path -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY -ChildPath $env:RELEASE_PRIMARYARTIFACTSOURCEALIAS
     }
-    else { $WorkingDirectory = $env:SYSTEM_DEFAULTWORKINGDIRECTORY }
+    else { $WorkingDirectory = $env:workingdirectory }
 }
 #endregion Handle Working Directory Defaults
 
