@@ -16,7 +16,7 @@ cache:
 shallow_clone: true
 
 environment:
-  workingdirectory: c:\projects\PStSQLtTestGenerator
+  workingdirectory: c:\projects\
   workingfolder: c:\projects\PStSQLtTestGenerator
   environment: development
   version: 0.1.$(appveyor_build_number)
