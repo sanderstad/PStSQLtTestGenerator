@@ -29,8 +29,8 @@ services:
 matrix:
   fast_finish: true
 
-#before_test:
-#- ps: .\build\appveyor-prerequisites.ps1
+before_test:
+- ps: .\build\appveyor-prerequisites.ps1
 
 #build_script:
 #- ps: .\build\appveyor-build.ps1
