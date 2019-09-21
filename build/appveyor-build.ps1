@@ -21,6 +21,11 @@ param (
     $AutoVersion
 )
 
+# region ApiKey defaults
+if (-not ApiKey) {
+    $ApiKey = $($env:psgallery_apiKey)
+}
+
 #region Handle Working Directory Defaults
 if (-not $WorkingDirectory) {
     if ($env:RELEASE_PRIMARYARTIFACTSOURCEALIAS) {
