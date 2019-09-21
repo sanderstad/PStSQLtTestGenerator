@@ -15,10 +15,6 @@ cache:
 #clone_depth: 100
 shallow_clone: true
 
-branches:
-  only:
-    - development
-
 environment:
   workingfolder: c:\projects\PStSQLtTestGenerator
   environment: development
