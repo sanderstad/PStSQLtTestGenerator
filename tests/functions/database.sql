@@ -1,9 +1,3 @@
-USE [UnitTesting]
-GO
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE FUNCTION [dbo].[DisplayPersons]
 (
     @PersonNumber INTEGER
@@ -11,12 +5,12 @@ CREATE FUNCTION [dbo].[DisplayPersons]
 RETURNS VARCHAR(20)
 AS
 BEGIN
-    DECLARE @PersonName AS VARCHAR(20);
+   DECLARE @PersonName AS VARCHAR(20);
 
-    SELECT @PersonName = FirstName + ' ' + LastName
-    FROM [dbo].Person
-    WHERE PersonId = @PersonNumber;
-    RETURN @PersonName;
+   SELECT @PersonName = FirstName + ' ' + LastName
+   FROM [dbo].Person
+   WHERE PersonId = @PersonNumber;
+   RETURN @PersonName;
 END;
 GO
 
@@ -24,16 +18,17 @@ SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
-CREATE TABLE [dbo].[Person](
-	[PersonId] [int] IDENTITY(1,1) NOT NULL,
-	[FirstName] [varchar](50) NOT NULL,
-	[LastName] [varchar](50) NOT NULL,
-	[Address] [varchar](100) NOT NULL,
-	[City] [varchar](50) NOT NULL,
-	[Zipcode] [varchar](8) NOT NULL,
-	[Country] [varchar](50) NOT NULL,
-	[Email] [varchar](100) NOT NULL,
- CONSTRAINT [PK_Person] PRIMARY KEY CLUSTERED
+CREATE TABLE [dbo].[Person]
+(
+   [PersonId] [int] IDENTITY(1,1) NOT NULL,
+   [FirstName] [varchar](50) NOT NULL,
+   [LastName] [varchar](50) NOT NULL,
+   [Address] [varchar](100) NOT NULL,
+   [City] [varchar](50) NOT NULL,
+   [Zipcode] [varchar](8) NOT NULL,
+   [Country] [varchar](50) NOT NULL,
+   [Email] [varchar](100) NOT NULL,
+   CONSTRAINT [PK_Person] PRIMARY KEY CLUSTERED
 (
 	[PersonId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -46,8 +41,8 @@ SET QUOTED_IDENTIFIER ON
 GO
 CREATE VIEW [dbo].[Person1]
 AS
-SELECT        PersonId, FirstName, LastName
-FROM            dbo.Person
+   SELECT PersonId, FirstName, LastName
+   FROM dbo.Person
 GO
 
 SET ANSI_NULLS ON
@@ -66,38 +61,38 @@ Date		Who						Notes
 10/08/2019	Sander Stad				Initial procedure
 */
 CREATE PROCEDURE [dbo].[Person_Create]
-    @PersonID INT OUTPUT,
-    @FirstName VARCHAR(50) = NULL,
-    @LastName VARCHAR(50) = NULL,
-    @Address VARCHAR(100) = NULL,
-    @City VARCHAR(50) = NULL,
-    @Zipcode VARCHAR(8) = NULL,
-    @Country VARCHAR(50) = NULL,
-    @Email VARCHAR(100) = NULL
+   @PersonID INT OUTPUT,
+   @FirstName VARCHAR(50) = NULL,
+   @LastName VARCHAR(50) = NULL,
+   @Address VARCHAR(100) = NULL,
+   @City VARCHAR(50) = NULL,
+   @Zipcode VARCHAR(8) = NULL,
+   @Country VARCHAR(50) = NULL,
+   @Email VARCHAR(100) = NULL
 AS
 BEGIN
 
 
-    -- Set session options to make sure transactions are aborted correctly
-    -- and the procedure doesn't return the count
-    SET XACT_ABORT, NOCOUNT ON;
+   -- Set session options to make sure transactions are aborted correctly
+   -- and the procedure doesn't return the count
+   SET XACT_ABORT, NOCOUNT ON;
 
-    -- Check the parameters
-    IF (@FirstName IS NULL)
+   -- Check the parameters
+   IF (@FirstName IS NULL)
     BEGIN
-        ;
-        THROW 50000, 'Invalid parameter: @FirstName cannot be NULL!', 1;
-        RETURN;
-    END;
+      ;
+      THROW 50000, 'Invalid parameter: @FirstName cannot be NULL!', 1;
+      RETURN;
+   END;
 
-    -- Declare variables
-    DECLARE @sqlcmd NVARCHAR(MAX);
-    DECLARE @params NVARCHAR(MAX);
+   -- Declare variables
+   DECLARE @sqlcmd NVARCHAR(MAX);
+   DECLARE @params NVARCHAR(MAX);
 
 
 
-    -- Set the SQL command
-    SET @sqlcmd
+   -- Set the SQL command
+   SET @sqlcmd
         = N'
 			INSERT INTO dbo.Person(FirstName,LastName,Address,City,Zipcode,Country,Email)
 			VALUES (@FirstName, @LastName, @Address, @City, @Zipcode, @Country, @Email);
@@ -105,7 +100,7 @@ BEGIN
 			SELECT @PersonID = SCOPE_IDENTITY();
 		';
 
-    SET @params
+   SET @params
         = N'
 			@PersonID INT OUTPUT,
 			@FirstName VARCHAR(50),
@@ -117,7 +112,7 @@ BEGIN
 			@Email VARCHAR(100)
 		';
 
-    EXECUTE sp_executesql @stmnt = @sqlcmd,
+   EXECUTE sp_executesql @stmnt = @sqlcmd,
                           @params = @params,
                           @FirstName = @FirstName,
                           @LastName = @LastName,
@@ -151,18 +146,18 @@ Date		Who						Notes
 CREATE PROCEDURE [dbo].[Person_GetAll]
 AS
 BEGIN
-    SET NOCOUNT ON;
+   SET NOCOUNT ON;
 
-    -- Execute the SQL command
-    SELECT PersonId,
-           FirstName,
-           LastName,
-           Address,
-           City,
-           Zipcode,
-           Country,
-           Email
-    FROM [dbo].[Person];
+   -- Execute the SQL command
+   SELECT PersonId,
+      FirstName,
+      LastName,
+      Address,
+      City,
+      Zipcode,
+      Country,
+      Email
+   FROM [dbo].[Person];
 
 END;
 GO

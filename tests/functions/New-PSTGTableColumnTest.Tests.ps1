@@ -5,7 +5,7 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
         [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        [object[]]$knownParameters = 'Table', 'OutputPath', 'TemplateFolder', 'InputObject', 'EnableException'
+        [object[]]$knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'Table', 'OutputPath', 'TemplateFolder', 'InputObject', 'EnableException'
         $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
         It "Should only contain our specific parameters" {
             (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
@@ -21,21 +21,20 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
+
+            Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
+
+            $server.Databases.Refresh()
         }
 
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
-
-        $server.Databases.Refresh()
-
-        $tables = $server.Databases[$($script:database)].Tables
     }
 
     Context "Create Table Column Test" {
-        $result = New-PSTGTableColumnTest -Table $tables -OutputPath $script:unittestfolder
+        $result = @()
+        $result += New-PSTGTableColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -53,7 +52,10 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = $tables | New-PSTGTableColumnTest -OutputPath $script:unittestfolder
+        $result = @()
+        $result += $tables.Name | New-PSTGTableColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+
+        $tables = $server.Databases[$($script:database)].Tables
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -71,8 +73,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
+        #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 }

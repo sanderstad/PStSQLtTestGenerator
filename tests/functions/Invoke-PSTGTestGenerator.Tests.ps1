@@ -21,17 +21,17 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
+
+            Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$($PSScriptRoot)\database.sql"
         }
 
         if (-not (Test-Path -Path $script:unittestfolder)) {
             $null = New-Item -Path $script:unittestfolder -ItemType Directory
         }
-
-        Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "database.sql"
     }
 
     Context "Create Tests" {
-        $result = Invoke-PSTGTestGenerator -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder
+        $result = Invoke-PSTGTestGenerator -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $files = Get-ChildItem -Path $script:unittestfolder
 
@@ -45,7 +45,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
             $file | Should -Not -Be $null
         }
 
-        it "Should have all the tests" {
+        It "Should have all the tests" {
             $files.Count | Should -Be 10
         }
 
@@ -55,9 +55,9 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        $null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
+        #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
 
-        #$null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
+        $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
 
 }

@@ -6,6 +6,19 @@ function New-PSTGTableColumnTest {
     .DESCRIPTION
         The function will retrieve the current columns for a table and create a test for it
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Accepts PowerShell credentials (Get-Credential).
+
+        Windows Authentication, SQL Server Authentication, Active Directory - Password, and Active Directory - Integrated are all supported.
+
+        For MFA support, please use Connect-DbaInstance.
+
+    .PARAMETER Database
+        The database or databases to add.
+
     .PARAMETER Table
         Table(s) to create tests for
 
@@ -43,8 +56,10 @@ function New-PSTGTableColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "Table", Mandatory)]
-        [object[]]$Table,
+        [DbaInstanceParameter]$SqlInstance,
+        [pscredential]$SqlCredential,
+        [string]$Database,
+        [string[]]$Table,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -53,6 +68,17 @@ function New-PSTGTableColumnTest {
     )
 
     begin {
+        # Check parameters
+        if (-not $SqlInstance) {
+            Stop-PSFFunction -Message "Please enter a SQL Server instance" -Target $SqlInstance
+            return
+        }
+
+        if (-not $Database) {
+            Stop-PSFFunction -Message "Please enter a database" -Target $Database
+            return
+        }
+
         # Check the output path
         if (-not $OutputPath) {
             Stop-PSFFunction -Message "Please enter an output path"
@@ -74,23 +100,34 @@ function New-PSTGTableColumnTest {
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
         $creator = $env:username
+
+        # Connect to the server
+        try {
+            $server = Connect-DbaInstance -SqlInstance $Sqlinstance -SqlCredential $SqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to '$Sqlinstance'" -Target $Sqlinstance -ErrorRecord $_ -Category ConnectionError
+            return
+        }
+
+        # Check if the database exists
+        if ($Database -notin $server.Databases.Name) {
+            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+        }
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $Table) {
-            Stop-Function -Message "You must pipe in an object or specify a Table"
+        if (-not $InputObject -and -not $Table -and -not $SqlInstance) {
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Table"
             return
         }
+
+        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name
 
         if ($Table) {
-            $InputObject = $Table
-        }
-
-        if ($InputObject[0].GetType().Name -ne 'Table') {
-            Stop-Function -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
+            $InputObject = $InputObject | Where-Object Name -in $Table
         }
 
         foreach ($input in $InputObject) {

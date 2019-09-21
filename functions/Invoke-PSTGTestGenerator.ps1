@@ -166,10 +166,9 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
 
         if (-not $SkipDatabaseTests) {
-
             try {
                 # Create the collation test
-                New-PSTGDatabaseCollationTest -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -EnableException
+                New-PSTGDatabaseCollationTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the database collation test" -Target $Database -ErrorRecord $_
@@ -181,17 +180,9 @@ function Invoke-PSTGTestGenerator {
         # Create the function tests
         #########################################################################
         if (-not $SkipFunctionTests) {
-            # Get all the functions
-            $functions = $server.Databases[$Database].UserDefinedFunctions | Where-Object { $_.IsSystemObject -eq $false }
-
-            # Filter out functions
-            if ($Function) {
-                $functions = $functions | Where-Object Name -in $Function
-            }
-
             # Create the function existence tests
             try {
-                New-PSTGObjectExistenceTest -Object $functions -OutputPath $OutputPath -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Function -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the function existence tests" -Target $Database -ErrorRecord $_
@@ -199,7 +190,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the function parameter tests
             try {
-                New-PSTGFunctionParameterTest -Function $functions -OutputPath $OutputPath -EnableException
+                New-PSTGFunctionParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Function $Function -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the function parameter tests" -Target $Database -ErrorRecord $_
@@ -210,16 +201,9 @@ function Invoke-PSTGTestGenerator {
         # Create the procedure tests
         #########################################################################
         if (-not $SkipProcedureTests) {
-            # Get all the procedures
-            $procedures = $server.Databases[$Database].StoredProcedures | Where-Object { $_.IsSystemObject -eq $false }
-
-            if ($Procedure) {
-                $procedures = $procedures | Where-Object Name -in $Procedure
-            }
-
             # Create the procedure existence tests
             try {
-                New-PSTGObjectExistenceTest -Object $procedures -OutputPath $OutputPath -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Procedure -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the procedure existence tests" -Target $Database -ErrorRecord $_
@@ -227,7 +211,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the procedure parameter tests
             try {
-                New-PSTGProcedureParameterTest -Procedure $procedures -OutputPath $OutputPath -EnableException
+                New-PSTGProcedureParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Procedure $Procedure -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the procedure parameter tests" -Target $Database -ErrorRecord $_
@@ -238,16 +222,10 @@ function Invoke-PSTGTestGenerator {
         # Create the table tests
         #########################################################################
         if (-not $SkipTableTests) {
-            # Get the tables
-            $tables = $server.Databases[$Database].Tables
-
-            if ($Table) {
-                $tables = $tables | Where-Object Name -in $Table
-            }
 
             # Create the table existence tests
             try {
-                New-PSTGObjectExistenceTest -Object $tables -OutputPath $OutputPath -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Table -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table existence tests" -Target $Database -ErrorRecord $_
@@ -255,7 +233,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the table column tests
             try {
-                New-PSTGTableColumnTest -Table $tables -OutputPath $OutputPath -EnableException
+                New-PSTGTableColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table column tests" -Target $Database -ErrorRecord $_
@@ -266,16 +244,9 @@ function Invoke-PSTGTestGenerator {
         # Create the view tests
         #########################################################################
         if (-not $SkipViewTests) {
-            # Get all the procedures
-            $views = $server.Databases[$Database].Views | Where-Object { $_.IsSystemObject -eq $false }
-
-            if ($View) {
-                $views = $views | Where-Object Name -in $View
-            }
-
             # Create the view existence tests
             try {
-                New-PSTGObjectExistenceTest -Object $views -OutputPath $OutputPath -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $View -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
@@ -283,7 +254,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the view column tests
             try {
-                New-PSTGViewColumnTest -View $views -OutputPath $OutputPath -EnableException
+                New-PSTGViewColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -View $View -OutputPath $OutputPath -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table column tests" -Target $Database -ErrorRecord $_

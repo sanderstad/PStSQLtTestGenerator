@@ -6,6 +6,19 @@ function New-PSTGViewColumnTest {
     .DESCRIPTION
         The function will retrieve the columns for a view and create a test for it
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Accepts PowerShell credentials (Get-Credential).
+
+        Windows Authentication, SQL Server Authentication, Active Directory - Password, and Active Directory - Integrated are all supported.
+
+        For MFA support, please use Connect-DbaInstance.
+
+    .PARAMETER Database
+        The database or databases to add.
+
     .PARAMETER View
         View(s) to create tests forr
 
@@ -45,8 +58,10 @@ function New-PSTGViewColumnTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "View", Mandatory)]
-        [object]$View,
+        [DbaInstanceParameter]$SqlInstance,
+        [pscredential]$SqlCredential,
+        [string]$Database,
+        [string[]]$View,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -55,6 +70,17 @@ function New-PSTGViewColumnTest {
     )
 
     begin {
+        # Check parameters
+        if (-not $SqlInstance) {
+            Stop-PSFFunction -Message "Please enter a SQL Server instance" -Target $SqlInstance
+            return
+        }
+
+        if (-not $Database) {
+            Stop-PSFFunction -Message "Please enter a database" -Target $Database
+            return
+        }
+
         # Check the output path
         if (-not $OutputPath) {
             Stop-PSFFunction -Message "Please enter an output path"
@@ -76,23 +102,35 @@ function New-PSTGViewColumnTest {
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
         $creator = $env:username
+
+        # Connect to the server
+        try {
+            $server = Connect-DbaInstance -SqlInstance $Sqlinstance -SqlCredential $SqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to '$Sqlinstance'" -Target $Sqlinstance -ErrorRecord $_ -Category ConnectionError
+            return
+        }
+
+        # Check if the database exists
+        if ($Database -notin $server.Databases.Name) {
+            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+        }
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $View) {
-            Stop-Function -Message "You must pipe in an object or specify a View"
+        if (-not $InputObject -and -not $View -and -not $SqlInstance) {
+            Stop-PSFFunction -Message "You must pipe in an object or specify a View"
             return
         }
 
         if ($View) {
-            $InputObject = $View
+            $InputObject = $server.Databases[$Database].Views | Where-Object Name -in $View
         }
-
-        if ($InputObject[0].GetType().Name -ne 'View') {
-            Stop-Function -Message "The object is not a valid type '$($InputObject[0].GetType().Name)'" -Target $InputObject
-            return
+        else {
+            $InputObject = $server.Databases[$Database].Views | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {

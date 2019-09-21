@@ -6,6 +6,19 @@ function New-PSTGObjectExistenceTest {
     .DESCRIPTION
         The function will create a test to check for the existence of an object
 
+    .PARAMETER SqlInstance
+        The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
+
+    .PARAMETER SqlCredential
+        Login to the target instance using alternative credentials. Accepts PowerShell credentials (Get-Credential).
+
+        Windows Authentication, SQL Server Authentication, Active Directory - Password, and Active Directory - Integrated are all supported.
+
+        For MFA support, please use Connect-DbaInstance.
+
+    .PARAMETER Database
+        The database or databases to add.
+
     .PARAMETER Object
         The object(s) to create the tests for
 
@@ -43,16 +56,29 @@ function New-PSTGObjectExistenceTest {
     [CmdletBinding(SupportsShouldProcess)]
 
     param(
-        [parameter(ParameterSetName = "Object", Mandatory)]
-        [object[]]$Object,
+        [DbaInstanceParameter]$SqlInstance,
+        [pscredential]$SqlCredential,
+        [string]$Database,
+        [string[]]$Object,
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
 
     begin {
+        # Check parameters
+        if (-not $SqlInstance) {
+            Stop-PSFFunction -Message "Please enter a SQL Server instance" -Target $SqlInstance
+            return
+        }
+
+        if (-not $Database) {
+            Stop-PSFFunction -Message "Please enter a database" -Target $Database
+            return
+        }
+
         # Check the output path
         if (-not $OutputPath) {
             Stop-PSFFunction -Message "Please enter an output path"
@@ -71,23 +97,40 @@ function New-PSTGObjectExistenceTest {
         if (-not (Test-Path -Path $TemplateFolder)) {
             Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
         }
+
+        # Connect to the server
+        try {
+            $server = Connect-DbaInstance -SqlInstance $Sqlinstance -SqlCredential $SqlCredential
+        }
+        catch {
+            Stop-PSFFunction -Message "Could not connect to '$Sqlinstance'" -Target $Sqlinstance -ErrorRecord $_ -Category ConnectionError
+            return
+        }
+
+        # Check if the database exists
+        if ($Database -notin $server.Databases.Name) {
+            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+        }
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $Object) {
-            Stop-Function -Message "You must pipe in an object or specify an Object"
-            return
-        }
-
         if ($Object) {
-            $InputObject = $Object
+            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $Object
+            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
+            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
+            $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
+        }
+        else {
+            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } }
+            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         foreach ($input in $InputObject) {
-
-            switch ($input.GetType().Name) {
+            switch ($input.ObjectType) {
                 "StoredProcedure" {
                     $objectType = "stored procedure"
                 }
@@ -123,7 +166,7 @@ function New-PSTGObjectExistenceTest {
 
             # Replace the markers with the content
             $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___OBJECTTYPE___", $ObjectType.ToLower())
+            $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
             $script = $script.Replace("___SCHEMA___", $input.Schema)
             $script = $script.Replace("___NAME___", $input.Name)
             $script = $script.Replace("___CREATOR___", $creator)
@@ -132,7 +175,7 @@ function New-PSTGObjectExistenceTest {
             # Write the test
             if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
                 try {
-                    Write-PSFMessage -Message "Creating existence test for $($ObjectType.ToLower()) '$($input.Schema).$($input.Name)'"
+                    Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($input.Schema).$($input.Name)'"
                     $script | Out-File -FilePath $fileName
 
                     [PSCustomObject]@{
