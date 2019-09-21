@@ -21,7 +21,6 @@ environment:
   environment: development
   version: 0.1.$(appveyor_build_number)
   appveyor_rdp_password: P$tSQLtTestG3nerator
-  psgallery_apiKey: oy2fjubfbe6oz7hgowqq7fekwsjn45gehavx2blnuyou6m
 
 services:
   - mssql2017
