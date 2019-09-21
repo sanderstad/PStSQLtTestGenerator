@@ -37,9 +37,9 @@ before_test:
 
 build: off
 
-#test_script:
+test_script:
 # Test with PowerShell and Pester
-#- ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
+- ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
 
 on_success:
 - ps: .\build\appveyor-build.ps1
