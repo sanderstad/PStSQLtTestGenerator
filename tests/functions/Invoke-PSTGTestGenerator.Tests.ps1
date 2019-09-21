@@ -46,7 +46,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         It "Should have all the tests" {
-            $files.Count | Should -Be 12
+            $files.Count | Should -Be 10
         }
 
         It "Result should have correct values" {
