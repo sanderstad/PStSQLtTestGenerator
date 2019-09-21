@@ -22,7 +22,7 @@ param (
 )
 
 # region ApiKey defaults
-if (-not ApiKey) {
+if (-not $ApiKey) {
     $ApiKey = $($env:psgallery_apiKey)
 }
 
