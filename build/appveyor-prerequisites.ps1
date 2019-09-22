@@ -17,8 +17,6 @@ if ($modules -notcontains "Pester") {
     Install-Module Pester -MinimumVersion "4" -Force -SkipPublisherCheck
 }
 
-Import-Module Pester -MinimumVersion "4"
-
 if ($modules -notcontains "PSScriptAnalyzer") {
     Write-PSFMessage -Level Host -Message "Installing PSScriptAnalyzer"
     Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
