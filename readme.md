@@ -8,7 +8,7 @@
 
 # What does it do
 
-<img style="float: right; height: 180px;" src="resources/logo.png">
+<img style="float: right; height: 180px;" src="resources/logo180px.png">
 
 Unit testing is fairly new to databases and more and more companies are implementing it into their development process.
 The downside is that the existing objects do not have any unit tests yet.
