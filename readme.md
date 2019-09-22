@@ -29,7 +29,7 @@ Tests like:
 Run the following to install the module from the PowerShell Gallery (to install on a server or for all users, remove the -Scope parameter and run in an elevated session):
 
 ```powershell
-Install-Module dbatools -Scope CurrentUser
+Install-Module PStSQLtTestGenerator -Scope CurrentUser
 ```
 
 ## How to run the module
