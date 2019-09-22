@@ -36,9 +36,27 @@ if (-not $WorkingDirectory) {
 #endregion Handle Working Directory Defaults
 
 # Prepare publish folder
-Write-PSFMessage -Level Important -Message "Creating and populating publishing directory"
-$publishDir = New-Item -Path $WorkingDirectory -Name publish -ItemType Directory
-Copy-Item -Path "$($WorkingDirectory)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force
+try {
+    Write-PSFMessage -Level Important -Message "Creating and populating publishing directory"
+    $publishDir = New-Item -Path $WorkingDirectory -Name publish -ItemType Directory
+    Copy-Item -Path "$($WorkingDirectory)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force
+}
+catch {
+    Stop-PSFFunction -Message "Something went wrong creating and populating publishing directory" -Target $publishDir -ErrorRecord $_
+    return
+}
+
+
+# region remove unneccesary directories
+try {
+    Remove-Item -Path "$($publishDir.FullName)\build" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)\tests" -Force -Recurse
+}
+catch {
+    Stop-PSFFunction -Message "Could not remove directories" -Target $publishDir.FullName -ErrorRecord $_
+    return
+}
+# end region
 
 #region Gather text data to compile
 $text = @()
@@ -48,7 +66,7 @@ $processed = @()
 foreach ($line in (Get-Content "$($PSScriptRoot)\filesBefore.txt" | Where-Object { $_ -notlike "#*" })) {
     if ([string]::IsNullOrWhiteSpace($line)) { continue }
 
-    $basePath = Join-Path "$($publishDir.FullName)\PStSQLtTestGenerator" $line
+    $basePath = Join-Path -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -ChildPath $line
     foreach ($entry in (Resolve-PSFPath -Path $basePath)) {
         $item = Get-Item $entry
         if ($item.PSIsContainer) { continue }
