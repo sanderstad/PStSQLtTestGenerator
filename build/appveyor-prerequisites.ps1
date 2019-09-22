@@ -3,12 +3,20 @@ $sw = [system.diagnostics.stopwatch]::startNew()
 
 $modules = (Get-Module -ListAvailable) | Select-Object Name, Version
 
+if ($modules.Name -notcontains "Pester") {
+    #    Write-PMessage -Level Host -Message "Installing Pester"
+    Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
+
+    Import-Module Pester
+    Get-Module -Name Pester
+}
+
 if ($modules.Name -notcontains "PSFramework") {
     Install-Module PSFramework -Force -SkipPublisherCheck
 }
 
 if ($modules.Name -notcontains "Pester") {
-    Write-PSFMessage -Level Host -Message "Installing Pester"
+    #    Write-PMessage -Level Host -Message "Installing Pester"
     Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
 
     Import-Module Pester
