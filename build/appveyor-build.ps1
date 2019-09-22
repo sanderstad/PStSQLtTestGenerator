@@ -122,21 +122,21 @@ if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
         $newBuildNumber = $remoteVersion.Build + 1
         [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
         Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
+    }
 
-        #region Publish
-        if ($SkipPublish) { return }
-        if ($LocalRepo) {
-            # Dependencies must go first
-            Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
-            New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
-            Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
-            New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
-        }
-        else {
-            # Publish to Gallery
-            Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
-            Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
-        }
+    #region Publish
+    if ($SkipPublish) { return }
+    if ($LocalRepo) {
+        # Dependencies must go first
+        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
+        New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
+        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
+        New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
+    }
+    else {
+        # Publish to Gallery
+        Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
+        Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
     }
 }
 else {
