@@ -14,8 +14,10 @@ if ($modules -notcontains "dbatools") {
 
 if ($modules -notcontains "Pester") {
     Write-PSFMessage -Level Host -Message "Installing Pester"
-    Install-Module Pester -MinimumVersion "4.0" -Force -SkipPublisherCheck
+    Install-Module Pester -MinimumVersion "4" -Force -SkipPublisherCheck
 }
+
+Import-Module Pester -MinimumVersion "4"
 
 if ($modules -notcontains "PSScriptAnalyzer") {
     Write-PSFMessage -Level Host -Message "Installing PSScriptAnalyzer"
