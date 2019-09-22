@@ -48,6 +48,7 @@ catch {
 
 # region remove unneccesary directories
 try {
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\appveyor.yml" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\build" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\resources" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\tests" -Force -Recurse
