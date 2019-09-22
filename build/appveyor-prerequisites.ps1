@@ -6,7 +6,7 @@ $modules = (Get-Module -ListAvailable) | Select-Object Name, Version
 
 Install-Module PSFramework -Force -SkipPublisherCheck
 
-choco install Pester -y
+choco install Pester -y  --no-progress
 #Install-Module Pester
 
 Import-Module Pester
