@@ -3,7 +3,7 @@ image: Visual Studio 2019
 
 version: 0.1.{build}
 
-#cache:
+cache:
 - C:\ProgramData\chocolatey\bin -> appveyor.yml
 - C:\ProgramData\chocolatey\lib -> appveyor.yml
 #- C:\Program Files\WindowsPowerShell\Modules\PSScriptAnalyzer -> appveyor.yml
