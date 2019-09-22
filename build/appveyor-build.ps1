@@ -123,7 +123,7 @@ if ($AutoVersion) {
         Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
     }
     else {
-        Write-PSFMessage -Level Warning -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
+        Write-PSFMessage -Level Important -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
     }
 }
 #endregion Updating the Module Version
