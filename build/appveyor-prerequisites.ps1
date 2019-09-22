@@ -3,28 +3,20 @@ $sw = [system.diagnostics.stopwatch]::startNew()
 
 $modules = (Get-Module -ListAvailable) | Select-Object Name, Version
 
-#if ($modules.Name -notcontains "Pester") {
-#    Write-PMessage -Level Host -Message "Installing Pester"
-# Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
-choco install Pester
-#}
 
-if ($modules.Name -notcontains "PSFramework") {
-    Install-Module PSFramework -Force -SkipPublisherCheck
-}
+Install-Module PSFramework -Force -SkipPublisherCheck
+
+choco install Pester -y
+#Install-Module Pester
 
 Import-Module Pester
 Write-PSFMessage -Level Important -Message "Pester version: $((Get-Module -Name Pester).Version)"
 
-if ($modules.Name -notcontains "dbatools") {
-    Write-PSFMessage -Level Host -Message "Installing dbatools"
-    Install-Module dbatools -MinimumVersion "1.0.38" -Force -SkipPublisherCheck
-}
+Write-PSFMessage -Level Host -Message "Installing dbatools"
+Install-Module dbatools -MinimumVersion "1.0.38" -Force -SkipPublisherCheck
 
-if ($modules -notcontains "PSScriptAnalyzer") {
-    Write-PSFMessage -Level Host -Message "Installing PSScriptAnalyzer"
-    Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
-}
+Write-PSFMessage -Level Host -Message "Installing PSScriptAnalyzer"
+Install-Module -Name PSScriptAnalyzer -Force -SkipPublisherCheck
 
 . "$PSScriptRoot\appveyor-constants.ps1"
 
