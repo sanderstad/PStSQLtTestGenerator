@@ -108,8 +108,9 @@ $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n")
 #endregion Update the psm1 file
 
 #region Updating the Module Version
-if ($AutoVersion) {
-    if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
+
+if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
+    if ($AutoVersion) {
         Write-PSFMessage -Level Important -Message "Updating module version numbers."
         try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
         catch {
@@ -122,24 +123,26 @@ if ($AutoVersion) {
         [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
         Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
     }
-    else {
-        Write-PSFMessage -Level Important -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
+
+    #region Publish
+    if ($SkipPublish) { return }
+    if ($LocalRepo) {
+        # Dependencies must go first
+        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
+        New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
+        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
+        New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
     }
+    else {
+        # Publish to Gallery
+        Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
+        Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
+    }
+}
+else {
+    Write-PSFMessage -Level Important -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
 }
 #endregion Updating the Module Version
 
-#region Publish
-if ($SkipPublish) { return }
-if ($LocalRepo) {
-    # Dependencies must go first
-    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
-    New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
-    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
-    New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
-}
-else {
-    # Publish to Gallery
-    Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
-    Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
-}
+
 #endregion Publish

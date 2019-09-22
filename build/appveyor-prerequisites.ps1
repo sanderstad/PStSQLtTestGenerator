@@ -9,12 +9,12 @@ if ($modules -notcontains "PSFramework") {
 
 if ($modules -notcontains "dbatools") {
     Write-PSFMessage -Level Host -Message "Installing dbatools"
-    Install-Module dbatools -Force -SkipPublisherCheck
+    Install-Module dbatools -MinimumVersion "1.0.38" -Force -SkipPublisherCheck
 }
 
 if ($modules -notcontains "Pester") {
     Write-PSFMessage -Level Host -Message "Installing Pester"
-    Install-Module Pester -Force -SkipPublisherCheck
+    Install-Module Pester -MinimumVersion "4.0" -Force -SkipPublisherCheck
 }
 
 if ($modules -notcontains "PSScriptAnalyzer") {
