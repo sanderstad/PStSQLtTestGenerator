@@ -5,7 +5,8 @@ $modules = (Get-Module -ListAvailable) | Select-Object Name, Version
 
 if ($modules.Name -notcontains "Pester") {
     #    Write-PMessage -Level Host -Message "Installing Pester"
-    Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
+    # Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
+    choco install Pester
 }
 
 if ($modules.Name -notcontains "PSFramework") {
