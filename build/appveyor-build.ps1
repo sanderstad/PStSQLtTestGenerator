@@ -49,8 +49,9 @@ catch {
 
 # region remove unneccesary directories
 try {
-    Remove-Item -Path "$($publishDir.FullName)\build" -Force -Recurse
-    Remove-Item -Path "$($publishDir.FullName)\tests" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\build" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)PStSQLtTestGenerator\resources" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)PStSQLtTestGenerator\tests" -Force -Recurse
 }
 catch {
     Stop-PSFFunction -Message "Could not remove directories" -Target $publishDir.FullName -ErrorRecord $_
