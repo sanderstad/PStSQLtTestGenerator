@@ -1,10 +1,7 @@
-﻿Master
+﻿| Master Branch | Development Branch |
+| ------------- |-------------|
+|[![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i/branch/master?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator/branch/master)     | [![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i/branch/development?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator/branch/development) |
 
-[![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i/branch/master?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator/branch/master)
-
-Development
-
-[![Build status](https://ci.appveyor.com/api/projects/status/hmbxfmswdm77td2i/branch/development?svg=true)](https://ci.appveyor.com/project/sanderstad/pstsqlttestgenerator/branch/development)
 
 # PStSQLtTestGenerator
 

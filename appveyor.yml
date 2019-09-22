@@ -16,6 +16,7 @@ cache:
 shallow_clone: true
 
 environment:
+  workingdirectory: c:\projects\
   workingfolder: c:\projects\PStSQLtTestGenerator
   environment: development
   version: 0.1.$(appveyor_build_number)
@@ -30,17 +31,14 @@ matrix:
 before_test:
 - ps: .\build\appveyor-prerequisites.ps1
 
-#build_script:
-#- ps: .\build\appveyor-build.ps1
-
 build: off
 
 test_script:
 # Test with PowerShell and Pester
 - ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
 
-# Collecting results
-#- ps: .\build\appveyor-validate.ps1 -Finalize -IncludeCoverage
+on_success:
+- ps: .\build\appveyor-build.ps1 -AutoVersion
 
 #on_finish:
 #  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
