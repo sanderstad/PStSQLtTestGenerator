@@ -6,7 +6,7 @@
 
 # PStSQLtTestGenerator
 
-# What does it do
+## What does it do
 
 <img style="float: right; height: 180px;" src="resources/logo180px.png">
 
@@ -23,6 +23,33 @@ Tests like:
 - Stored Procedure Parameters
 - Table Columns
 - View Columns
+
+## How to install
+
+Run the following to install the module from the PowerShell Gallery (to install on a server or for all users, remove the -Scope parameter and run in an elevated session):
+
+```powershell
+Install-Module dbatools -Scope CurrentUser
+```
+
+## How to run the module
+
+The main command to get all the tests is `Invoke-PSTGTestGenerator`.
+
+To get all the tests run the following command:
+
+```powershell
+Invoke-PSTGTestGenerator -SqlInstance [yourinstance] -Database [yourdatabase] -OutputPath [testfolder]
+```
+
+That's all that is to it. The tests will all be written to the designated folder.
+You can then copy these to your SSDT project or run the scripts to create the the tests in your database
+
+For more help and information about any particular command, run the Get-Help command, i.e.:
+
+```powershell
+Get-Help Invoke-PSTGTestGenerator
+```
 
 ## How does it work
 
@@ -56,21 +83,3 @@ END;
 
 ```
 
-## How to run the module
-
-The main command to get all the tests is `Invoke-PSTGTestGenerator`.
-
-To get all the tests run the following command:
-
-```powershell
-Invoke-PSTGTestGenerator -SqlInstance [yourinstance] -Database [yourdatabase] -OutputPath [testfolder]
-```
-
-That's all that is to it. The tests will all be written to the designated folder.
-You can then copy these to your SSDT project or run the scripts to create the the tests in your database
-
-For more help and information about any particular command, run the Get-Help command, i.e.:
-
-```powershell
-Get-Help Invoke-PSTGTestGenerator
-```
