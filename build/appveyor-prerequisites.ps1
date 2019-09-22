@@ -1,20 +1,20 @@
 Add-AppveyorTest -Name "appveyor.prerequisites" -Framework NUnit -FileName "appveyor-prerequisites.ps1" -Outcome Running
 $sw = [system.diagnostics.stopwatch]::startNew()
 
-$modules = (Get-Module -ListAvailable).Name
+$modules = (Get-Module -ListAvailable) | Select-Object Name, Version
 
-if ($modules -notcontains "PSFramework") {
+if ($modules.Name -notcontains "PSFramework") {
     Install-Module PSFramework -Force -SkipPublisherCheck
 }
 
-if ($modules -notcontains "dbatools") {
-    Write-PSFMessage -Level Host -Message "Installing dbatools"
-    Install-Module dbatools -MinimumVersion "1.0.38" -Force -SkipPublisherCheck
+if ($modules.Name -notcontains "Pester") {
+    Write-PSFMessage -Level Host -Message "Installing Pester"
+    Install-Module Pester -MinimumVersion "4.8.1" -Force -SkipPublisherCheck
 }
 
-if ($modules -notcontains "Pester") {
-    Write-PSFMessage -Level Host -Message "Installing Pester"
-    Install-Module Pester -MinimumVersion "4.0" -Force -SkipPublisherCheck
+if ($modules.Name -notcontains "dbatools") {
+    Write-PSFMessage -Level Host -Message "Installing dbatools"
+    Install-Module dbatools -MinimumVersion "1.0.38" -Force -SkipPublisherCheck
 }
 
 if ($modules -notcontains "PSScriptAnalyzer") {

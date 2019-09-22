@@ -46,7 +46,6 @@ catch {
     return
 }
 
-
 # region remove unneccesary directories
 try {
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\build" -Force -Recurse
