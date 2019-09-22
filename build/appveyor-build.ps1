@@ -36,9 +36,28 @@ if (-not $WorkingDirectory) {
 #endregion Handle Working Directory Defaults
 
 # Prepare publish folder
-Write-PSFMessage -Level Important -Message "Creating and populating publishing directory"
-$publishDir = New-Item -Path $WorkingDirectory -Name publish -ItemType Directory
-Copy-Item -Path "$($WorkingDirectory)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force
+try {
+    Write-PSFMessage -Level Important -Message "Creating and populating publishing directory"
+    $publishDir = New-Item -Path $WorkingDirectory -Name publish -ItemType Directory
+    Copy-Item -Path "$($WorkingDirectory)\PStSQLtTestGenerator" -Destination $publishDir.FullName -Recurse -Force
+}
+catch {
+    Stop-PSFFunction -Message "Something went wrong creating and populating publishing directory" -Target $publishDir -ErrorRecord $_
+    return
+}
+
+
+# region remove unneccesary directories
+try {
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\build" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\resources" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\tests" -Force -Recurse
+}
+catch {
+    Stop-PSFFunction -Message "Could not remove directories" -Target $publishDir.FullName -ErrorRecord $_
+    return
+}
+# end region
 
 #region Gather text data to compile
 $text = @()
@@ -48,7 +67,7 @@ $processed = @()
 foreach ($line in (Get-Content "$($PSScriptRoot)\filesBefore.txt" | Where-Object { $_ -notlike "#*" })) {
     if ([string]::IsNullOrWhiteSpace($line)) { continue }
 
-    $basePath = Join-Path "$($publishDir.FullName)\PStSQLtTestGenerator" $line
+    $basePath = Join-Path -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -ChildPath $line
     foreach ($entry in (Resolve-PSFPath -Path $basePath)) {
         $item = Get-Item $entry
         if ($item.PSIsContainer) { continue }
@@ -90,17 +109,22 @@ $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n")
 
 #region Updating the Module Version
 if ($AutoVersion) {
-    Write-PSFMessage -Level Important -Message "Updating module version numbers."
-    try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
-    catch {
-        Stop-PSFFunction -Message "Failed to access $($Repository)" -EnableException $true -ErrorRecord $_
+    if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
+        Write-PSFMessage -Level Important -Message "Updating module version numbers."
+        try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
+        catch {
+            Stop-PSFFunction -Message "Failed to access $($Repository)" -EnableException $true -ErrorRecord $_
+        }
+        if (-not $remoteVersion) {
+            Stop-PSFFunction -Message "Couldn't find PStSQLtTestGenerator on repository $($Repository)" -EnableException $true
+        }
+        $newBuildNumber = $remoteVersion.Build + 1
+        [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
+        Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
     }
-    if (-not $remoteVersion) {
-        Stop-PSFFunction -Message "Couldn't find PStSQLtTestGenerator on repository $($Repository)" -EnableException $true
+    else {
+        Write-PSFMessage -Level Warning -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
     }
-    $newBuildNumber = $remoteVersion.Build + 1
-    [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
-    Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
 }
 #endregion Updating the Module Version
 
