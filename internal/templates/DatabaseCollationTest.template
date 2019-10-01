@@ -21,7 +21,7 @@ BEGIN
 
     ----- ACT ----------------------------------------------------
 
-    SELECT @actual = DATABASEPROPERTYEX('___DATABASE___', 'Collation');
+    SELECT @actual = CAST(DATABASEPROPERTYEX('___DATABASE___', 'Collation') AS VARCHAR(255));
 
     ----- ASSERT -------------------------------------------------
     EXEC tSQLt.AssertEquals @expected, @actual;
