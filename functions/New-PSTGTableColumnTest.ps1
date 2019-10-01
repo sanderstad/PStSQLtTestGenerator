@@ -112,7 +112,7 @@ function New-PSTGTableColumnTest {
 
         # Check if the database exists
         if ($Database -notin $server.Databases.Name) {
-            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+            Stop-PSFFunction -Message "Database '$Database' cannot be found on '$SqlInstance'" -Target $Database
         }
     }
 
@@ -124,7 +124,7 @@ function New-PSTGTableColumnTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name
+        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
 
         if ($Table) {
             $InputObject = $InputObject | Where-Object Name -in $Table
