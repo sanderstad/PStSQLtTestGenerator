@@ -34,7 +34,6 @@ BEGIN
 
     INSERT INTO #expected
     (
-        SchemaName,
         ColumnName,
         DataType,
         LengthSize,
