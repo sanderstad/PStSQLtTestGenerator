@@ -129,7 +129,13 @@ function New-PSTGObjectExistenceTest {
             $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
+        $objectCount = $InputObject.Count
+        $objectStep = 1
+
         foreach ($input in $InputObject) {
+            $task = "Creating object existence test $($objectStep) of $($objectCount)"
+            Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+
             switch ($input.ObjectType) {
                 "StoredProcedure" {
                     $objectType = "stored procedure"

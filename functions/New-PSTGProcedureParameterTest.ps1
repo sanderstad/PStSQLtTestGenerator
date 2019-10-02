@@ -131,7 +131,13 @@ function New-PSTGProcedureParameterTest {
             $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
+        $objectCount = $InputObject.Count
+        $objectStep = 1
+
         foreach ($input in $InputObject) {
+            $task = "Creating function $($objectStep) of $($objectCount)"
+            Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+
             $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters Expect Success"
 
             # Test if the name of the test does not become too long

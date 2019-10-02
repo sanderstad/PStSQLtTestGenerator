@@ -165,6 +165,12 @@ function Invoke-PSTGTestGenerator {
         # Create the database tests
         #########################################################################
 
+        $totalSteps = 5
+        $currentStep = 1
+        $task = "Creating Database Tests"
+
+        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
         if (-not $SkipDatabaseTests) {
             try {
                 # Create the collation test
@@ -179,6 +185,12 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the function tests
         #########################################################################
+
+        $currentStep = 2
+        $task = "Creating Function Tests"
+
+        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
         if (-not $SkipFunctionTests) {
             # Create the function existence tests
             try {
@@ -200,6 +212,12 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the procedure tests
         #########################################################################
+
+        $currentStep = 3
+        $task = "Creating Procedure Tests"
+
+        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
         if (-not $SkipProcedureTests) {
             # Create the procedure existence tests
             try {
@@ -221,6 +239,12 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the table tests
         #########################################################################
+
+        $currentStep = 4
+        $task = "Creating Table Tests"
+
+        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
         if (-not $SkipTableTests) {
 
             # Create the table existence tests
@@ -243,6 +267,11 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the view tests
         #########################################################################
+        $currentStep = 5
+        $task = "Creating View Tests"
+
+        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
         if (-not $SkipViewTests) {
             # Create the view existence tests
             try {
