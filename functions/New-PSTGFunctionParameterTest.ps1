@@ -134,70 +134,72 @@ function New-PSTGFunctionParameterTest {
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        foreach ($input in $InputObject) {
-            $task = "Creating function test $($objectStep) of $($objectCount)"
-            Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+        if ($InputObject.Count -ge 1) {
+            foreach ($input in $InputObject) {
+                $task = "Creating function test $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-            $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters Expect Success"
+                $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters Expect Success"
 
-            # Test if the name of the test does not become too long
-            if ($testName.Length -gt 128) {
-                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-            }
-
-            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-
-            # Get the parameters
-            $parameters = $input.Parameters
-
-            if ($parameters.Count -ge 1) {
-                # Import the template
-                try {
-                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "FunctionParameterTest.template")
-                }
-                catch {
-                    Stop-PSFFunction -Message "Could not import test template 'FunctionParameterTest.template'" -Target $testName -ErrorRecord $_
+                # Test if the name of the test does not become too long
+                if ($testName.Length -gt 128) {
+                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
                 }
 
-                $paramTextCollection = @()
+                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
 
-                # Loop through the parameters
-                foreach ($parameter in $parameters) {
-                    $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
-                    $paramTextCollection += $paramText
-                }
+                # Get the parameters
+                $parameters = $input.Parameters
 
-                # Replace the markers with the content
-                $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
-                $script = $script.Replace("___CREATOR___", $creator)
-                $script = $script.Replace("___DATE___", $date)
-                $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
-
-                # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                if ($parameters.Count -ge 1) {
+                    # Import the template
                     try {
-                        Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
-                        $script | Out-File -FilePath $fileName
-
-                        [PSCustomObject]@{
-                            TestName = $testName
-                            Category = "FunctionParameter"
-                            Creator  = $creator
-                            FileName = $fileName
-                        }
+                        $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "FunctionParameterTest.template")
                     }
                     catch {
-                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not import test template 'FunctionParameterTest.template'" -Target $testName -ErrorRecord $_
+                    }
+
+                    $paramTextCollection = @()
+
+                    # Loop through the parameters
+                    foreach ($parameter in $parameters) {
+                        $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        $paramTextCollection += $paramText
+                    }
+
+                    # Replace the markers with the content
+                    $script = $script.Replace("___TESTNAME___", $testName)
+                    $script = $script.Replace("___SCHEMA___", $input.Schema)
+                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___CREATOR___", $creator)
+                    $script = $script.Replace("___DATE___", $date)
+                    $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
+
+                    # Write the test
+                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                        try {
+                            Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
+                            $script | Out-File -FilePath $fileName
+
+                            [PSCustomObject]@{
+                                TestName = $testName
+                                Category = "FunctionParameter"
+                                Creator  = $creator
+                                FileName = $fileName
+                            }
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        }
                     }
                 }
-            }
-            else {
-                Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
-            }
+                else {
+                    Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
+                }
 
-            $functionStep++
+                $functionStep++
+            }
         }
     }
 }

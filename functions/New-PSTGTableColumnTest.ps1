@@ -133,63 +133,65 @@ function New-PSTGTableColumnTest {
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        foreach ($input in $InputObject) {
-            $task = "Creating function $($objectStep) of $($objectCount)"
-            Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+        if ($InputObject.Count -ge 1) {
+            foreach ($input in $InputObject) {
+                $task = "Creating function $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-            $testName = "test If table $($input.Schema).$($input.Name) has the correct columns Expect Success"
+                $testName = "test If table $($input.Schema).$($input.Name) has the correct columns Expect Success"
 
-            # Test if the name of the test does not become too long
-            if ($testName.Length -gt 128) {
-                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-            }
+                # Test if the name of the test does not become too long
+                if ($testName.Length -gt 128) {
+                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+                }
 
-            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-            $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-            $creator = $env:username
+                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+                $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+                $creator = $env:username
 
-            # Import the template
-            try {
-                $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableColumnTest.template")
-            }
-            catch {
-                Stop-PSFFunction -Message "Could not import test template 'TableColumnTest.template'" -Target $testName -ErrorRecord $_
-            }
-
-            # Get the columns
-            $columns = $input.Columns
-
-            $columnTextCollection = @()
-
-            # Loop through the columns
-            foreach ($column in $columns) {
-                $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
-                $columnTextCollection += $columnText
-            }
-
-            # Replace the markers with the content
-            $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___SCHEMA___", $input.Schema)
-            $script = $script.Replace("___NAME___", $input.Name)
-            $script = $script.Replace("___CREATOR___", $creator)
-            $script = $script.Replace("___DATE___", $date)
-            $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
-
-            # Write the test
-            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Column Test")) {
+                # Import the template
                 try {
-                    Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
-                    $script | Out-File -FilePath $fileName
-
-                    [PSCustomObject]@{
-                        TestName = $testName
-                        Category = "TableColumn"
-                        Creator  = $creator
-                        FileName = $fileName
-                    }
+                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableColumnTest.template")
                 }
                 catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    Stop-PSFFunction -Message "Could not import test template 'TableColumnTest.template'" -Target $testName -ErrorRecord $_
+                }
+
+                # Get the columns
+                $columns = $input.Columns
+
+                $columnTextCollection = @()
+
+                # Loop through the columns
+                foreach ($column in $columns) {
+                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                    $columnTextCollection += $columnText
+                }
+
+                # Replace the markers with the content
+                $script = $script.Replace("___TESTNAME___", $testName)
+                $script = $script.Replace("___SCHEMA___", $input.Schema)
+                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___CREATOR___", $creator)
+                $script = $script.Replace("___DATE___", $date)
+                $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+
+                # Write the test
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Column Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
+                        $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "TableColumn"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    }
                 }
             }
         }

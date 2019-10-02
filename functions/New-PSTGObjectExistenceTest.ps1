@@ -132,67 +132,69 @@ function New-PSTGObjectExistenceTest {
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        foreach ($input in $InputObject) {
-            $task = "Creating object existence test $($objectStep) of $($objectCount)"
-            Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+        if ($InputObject.Count -ge 1) {
+            foreach ($input in $InputObject) {
+                $task = "Creating object existence test $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-            switch ($input.ObjectType) {
-                "StoredProcedure" {
-                    $objectType = "stored procedure"
-                }
-                "Table" {
-                    $objectType = "table"
-                }
-                "UserDefinedFunction" {
-                    $objectType = "user defined function"
-                }
-                "View" {
-                    $objectType = "View"
-                }
-            }
-
-            $testName = "test If $($objectType.ToLower()) $($input.Schema)`.$($input.Name) exists Expect Success"
-
-            # Test if the name of the test does not become too long
-            if ($testName.Length -gt 128) {
-                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-            }
-
-            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-            $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-            $creator = $env:username
-
-            # Import the template
-            try {
-                $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ObjectExistence.template")
-            }
-            catch {
-                Stop-PSFFunction -Message "Could not import test template 'ObjectExistence.template'" -Target $testName -ErrorRecord $_
-            }
-
-            # Replace the markers with the content
-            $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
-            $script = $script.Replace("___SCHEMA___", $input.Schema)
-            $script = $script.Replace("___NAME___", $input.Name)
-            $script = $script.Replace("___CREATOR___", $creator)
-            $script = $script.Replace("___DATE___", $date)
-
-            # Write the test
-            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
-                try {
-                    Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($input.Schema).$($input.Name)'"
-                    $script | Out-File -FilePath $fileName
-
-                    [PSCustomObject]@{
-                        TestName = $testName
-                        Category = "ObjectExistence"
-                        Creator  = $creator
-                        FileName = $fileName
+                switch ($input.ObjectType) {
+                    "StoredProcedure" {
+                        $objectType = "stored procedure"
+                    }
+                    "Table" {
+                        $objectType = "table"
+                    }
+                    "UserDefinedFunction" {
+                        $objectType = "user defined function"
+                    }
+                    "View" {
+                        $objectType = "View"
                     }
                 }
+
+                $testName = "test If $($objectType.ToLower()) $($input.Schema)`.$($input.Name) exists Expect Success"
+
+                # Test if the name of the test does not become too long
+                if ($testName.Length -gt 128) {
+                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+                }
+
+                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+                $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+                $creator = $env:username
+
+                # Import the template
+                try {
+                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ObjectExistence.template")
+                }
                 catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    Stop-PSFFunction -Message "Could not import test template 'ObjectExistence.template'" -Target $testName -ErrorRecord $_
+                }
+
+                # Replace the markers with the content
+                $script = $script.Replace("___TESTNAME___", $testName)
+                $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
+                $script = $script.Replace("___SCHEMA___", $input.Schema)
+                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___CREATOR___", $creator)
+                $script = $script.Replace("___DATE___", $date)
+
+                # Write the test
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($input.Schema).$($input.Name)'"
+                        $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "ObjectExistence"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    }
                 }
             }
         }
