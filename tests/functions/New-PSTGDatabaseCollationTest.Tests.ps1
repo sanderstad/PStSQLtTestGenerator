@@ -51,7 +51,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        #$null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false -EnableException
+        $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false -EnableException
 
         $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }

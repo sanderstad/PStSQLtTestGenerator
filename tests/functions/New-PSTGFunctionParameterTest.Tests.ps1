@@ -22,7 +22,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
 
-            Invoke-DbaQuery -SqlInstance $script:sqlinstance -Database $script:database -File "$PSScriptRoot\database.sql"
+            Invoke-DbaQuery -SqlInstance $script:sqlinstance -Database $script:database -File (Join-Path -Path $PSScriptRoot -ChildPath "database.sql")
 
             $server.Databases.Refresh()
         }
@@ -51,7 +51,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
-    <# Context "Using Pipeline" {
+    Context "Using Pipeline" {
         $functions = $server.Databases[$($script:database)].UserDefinedFunctions | Where-Object IsSystemObject -eq $false
 
         $result = @()
@@ -70,10 +70,10 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         It "Result should have correct values" {
             $file.FullName | Should -Be $result[0].FileName
         }
-    } #>
+    }
 
     AfterAll {
-        #$null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false
+        $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false
 
         $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }

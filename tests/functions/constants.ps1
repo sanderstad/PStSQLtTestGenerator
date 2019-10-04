@@ -1,6 +1,6 @@
 # constants
 if (Test-Path C:\temp\constants_pstsqlttestgenerator.ps1) {
-    Write-Host "C:\temp\constants_pstsqlttestgenerator.ps1 found."
+    Write-Verbose "C:\temp\constants_pstsqlttestgenerator.ps1 found."
     . C:\temp\constants_pstsqlttestgenerator.ps1
 }
 else {
