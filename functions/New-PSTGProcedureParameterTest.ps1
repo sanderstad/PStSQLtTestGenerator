@@ -95,7 +95,12 @@ function New-PSTGProcedureParameterTest {
         }
 
         if (-not (Test-Path -Path $TemplateFolder)) {
-            Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern

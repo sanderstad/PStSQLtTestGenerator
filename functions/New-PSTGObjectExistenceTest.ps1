@@ -86,7 +86,12 @@ function New-PSTGObjectExistenceTest {
         }
 
         if (-not (Test-Path -Path $OutputPath)) {
-            Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         # Check the template folder
