@@ -70,7 +70,6 @@ function New-PSTGDatabaseCollationTest {
             Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
         }
 
-        $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
         $creator = $env:username
 
@@ -101,6 +100,7 @@ function New-PSTGDatabaseCollationTest {
         if (Test-PSFFunctionInterrupt) { return }
 
         $testName = "test If database has correct collation"
+        $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
 
         # Import the template
         try {
