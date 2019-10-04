@@ -136,7 +136,7 @@ function New-PSTGProcedureParameterTest {
 
         if ($InputObject.Count -ge 1) {
             foreach ($input in $InputObject) {
-                $task = "Creating function $($objectStep) of $($objectCount)"
+                $task = "Creating procedure $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters"
