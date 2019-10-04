@@ -95,7 +95,12 @@ function New-PSTGProcedureParameterTest {
         }
 
         if (-not (Test-Path -Path $TemplateFolder)) {
-            Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
@@ -114,6 +119,9 @@ function New-PSTGProcedureParameterTest {
         if ($Database -notin $server.Databases.Name) {
             Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
         }
+
+        $task = "Collecting objects"
+        Write-Progress -ParentId 1 -Activity " Stored Procedure Parameters" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
@@ -125,21 +133,21 @@ function New-PSTGProcedureParameterTest {
         }
 
         if ($Procedure) {
-            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $Procedure
+            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $Procedure
         }
         else {
-            $InputObject = $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        if ($InputObject.Count -ge 1) {
+        if ($objectCount -ge 1) {
             foreach ($input in $InputObject) {
-                $task = "Creating function $($objectStep) of $($objectCount)"
-                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+                $task = "Creating procedure $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters Expect Success"
+                $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {

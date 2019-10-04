@@ -65,7 +65,7 @@ function New-PSTGViewColumnTest {
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -88,7 +88,12 @@ function New-PSTGViewColumnTest {
         }
 
         if (-not (Test-Path -Path $OutputPath)) {
-            Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         # Check the template folder
@@ -116,6 +121,9 @@ function New-PSTGViewColumnTest {
         if ($Database -notin $server.Databases.Name) {
             Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
         }
+
+        $task = "Collecting objects"
+        Write-Progress -ParentId 1 -Activity " View Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
@@ -127,21 +135,21 @@ function New-PSTGViewColumnTest {
         }
 
         if ($View) {
-            $InputObject = $server.Databases[$Database].Views | Where-Object Name -in $View
+            $InputObject += $server.Databases[$Database].Views | Where-Object Name -in $View | Select-Object Schema, Name, Columns
         }
         else {
-            $InputObject = $server.Databases[$Database].Views | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
         }
 
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        if ($InputObject.Count -ge 1) {
+        if ($objectCount -ge 1) {
             foreach ($input in $InputObject) {
-                $task = "Creating function $($objectStep) of $($objectCount)"
-                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+                $task = "Creating view $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns Expect Success"
+                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {

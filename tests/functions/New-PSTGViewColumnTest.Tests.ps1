@@ -16,13 +16,13 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     BeforeAll {
-        $server = Connect-DbaInstance -SqlInstance $script:instance
+        $server = Connect-DbaInstance -SqlInstance $script:sqlinstance
 
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
             $server.Query($query)
 
-            Invoke-DbaQuery -SqlInstance $script:instance -Database $script:database -File "$PSScriptRoot\database.sql"
+            Invoke-DbaQuery -SqlInstance $script:sqlinstance -Database $script:database -File (Join-Path -Path $PSScriptRoot -ChildPath "database.sql")
 
             $server.Databases.Refresh()
         }
@@ -34,7 +34,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     Context "Create View Column Test" {
         $result = @()
-        $result += New-PSTGViewColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
+        $result += New-PSTGViewColumnTest -SqlInstance $script:sqlinstance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -52,10 +52,10 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
-        $result = @()
-        $result += $views.Name | New-PSTGViewColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
-
         $views = $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
+
+        $result = @()
+        $result += $views.Name | New-PSTGViewColumnTest -SqlInstance $script:sqlinstance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
 
@@ -73,7 +73,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
+        $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false
 
         $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
