@@ -152,7 +152,7 @@ function New-PSTGObjectExistenceTest {
                     }
                 }
 
-                $testName = "test If $($objectType.ToLower()) $($input.Schema)`.$($input.Name) exists Expect Success"
+                $testName = "test If $($objectType.ToLower()) $($input.Schema)`.$($input.Name) exists"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {

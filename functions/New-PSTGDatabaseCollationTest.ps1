@@ -65,8 +65,6 @@ function New-PSTGDatabaseCollationTest {
             return
         }
 
-        $testName = "test If database has correct collation Expect Success"
-
         # Test if the name of the test does not become too long
         if ($testName.Length -gt 128) {
             Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
@@ -101,6 +99,8 @@ function New-PSTGDatabaseCollationTest {
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
+
+        $testName = "test If database has correct collation"
 
         # Import the template
         try {

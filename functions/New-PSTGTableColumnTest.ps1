@@ -138,7 +138,7 @@ function New-PSTGTableColumnTest {
                 $task = "Creating function $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If table $($input.Schema).$($input.Name) has the correct columns Expect Success"
+                $testName = "test If table $($input.Schema).$($input.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {

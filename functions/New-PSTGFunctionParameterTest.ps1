@@ -139,7 +139,7 @@ function New-PSTGFunctionParameterTest {
                 $task = "Creating function test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters Expect Success"
+                $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
