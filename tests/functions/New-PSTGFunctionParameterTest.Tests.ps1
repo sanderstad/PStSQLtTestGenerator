@@ -32,8 +32,6 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
-
-
     Context "Create Function Parameter Test" {
         $result = @()
         $result = New-PSTGFunctionParameterTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
