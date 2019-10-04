@@ -65,7 +65,7 @@ function New-PSTGViewColumnTest {
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -88,7 +88,12 @@ function New-PSTGViewColumnTest {
         }
 
         if (-not (Test-Path -Path $OutputPath)) {
-            Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         # Check the template folder
@@ -116,6 +121,9 @@ function New-PSTGViewColumnTest {
         if ($Database -notin $server.Databases.Name) {
             Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
         }
+
+        $task = "Collecting objects"
+        Write-Progress -ParentId 1 -Activity " View Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
@@ -127,66 +135,74 @@ function New-PSTGViewColumnTest {
         }
 
         if ($View) {
-            $InputObject = $server.Databases[$Database].Views | Where-Object Name -in $View
+            $InputObject += $server.Databases[$Database].Views | Where-Object Name -in $View | Select-Object Schema, Name, Columns
         }
         else {
-            $InputObject = $server.Databases[$Database].Views | Select-Object Schema, Name, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
         }
 
-        foreach ($input in $InputObject) {
-            $testName = "test If view $($input.Schema).$($input.Name) has the correct columns Expect Success"
+        $objectCount = $InputObject.Count
+        $objectStep = 1
 
-            # Test if the name of the test does not become too long
-            if ($testName.Length -gt 128) {
-                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-            }
+        if ($objectCount -ge 1) {
+            foreach ($input in $InputObject) {
+                $task = "Creating view $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-            $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-            $creator = $env:username
+                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns"
 
-            # Import the template
-            try {
-                $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ViewColumnTest.template")
-            }
-            catch {
-                Stop-PSFFunction -Message "Could not import test template 'ViewColumnTest.template'" -Target $testName -ErrorRecord $_
-            }
+                # Test if the name of the test does not become too long
+                if ($testName.Length -gt 128) {
+                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+                }
 
-            # Get the columns
-            $columns = $input.Columns
+                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+                $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+                $creator = $env:username
 
-            $columnTextCollection = @()
-
-            # Loop through the columns
-            foreach ($column in $columns) {
-                $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
-                $columnTextCollection += $columnText
-            }
-
-            # Replace the markers with the content
-            $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___SCHEMA___", $input.Schema)
-            $script = $script.Replace("___NAME___", $input.Name)
-            $script = $script.Replace("___CREATOR___", $creator)
-            $script = $script.Replace("___DATE___", $date)
-            $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
-
-            # Write the test
-            if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                # Import the template
                 try {
-                    Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
-                    $script | Out-File -FilePath $fileName
-
-                    [PSCustomObject]@{
-                        TestName = $testName
-                        Category = "ViewColumn"
-                        Creator  = $creator
-                        FileName = $fileName
-                    }
+                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ViewColumnTest.template")
                 }
                 catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    Stop-PSFFunction -Message "Could not import test template 'ViewColumnTest.template'" -Target $testName -ErrorRecord $_
+                }
+
+                # Get the columns
+                $columns = $input.Columns
+
+                $columnTextCollection = @()
+
+                # Loop through the columns
+                foreach ($column in $columns) {
+                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                    $columnTextCollection += $columnText
+                }
+
+                # Replace the markers with the content
+                $script = $script.Replace("___TESTNAME___", $testName)
+                $script = $script.Replace("___SCHEMA___", $input.Schema)
+                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___CREATOR___", $creator)
+                $script = $script.Replace("___DATE___", $date)
+                $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+
+                # Write the test
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
+                        $script | Out-File -FilePath $fileName
+
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "ViewColumn"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    }
                 }
             }
         }

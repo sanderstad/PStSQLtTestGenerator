@@ -86,7 +86,12 @@ function New-PSTGFunctionParameterTest {
         }
 
         if (-not (Test-Path -Path $OutputPath)) {
-            Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
+            try {
+                $null = New-Item -Path $OutputPath -ItemType Directory
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
+            }
         }
 
         # Check the template folder
@@ -114,6 +119,9 @@ function New-PSTGFunctionParameterTest {
         if ($Database -notin $server.Databases.Name) {
             Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
         }
+
+        $task = "Collecting objects"
+        Write-Progress -ParentId 1 -Activity " Function Parameters" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
@@ -125,70 +133,80 @@ function New-PSTGFunctionParameterTest {
         }
 
         if ($Function) {
-            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters | Where-Object Name -in $Function
+            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters | Where-Object Name -in $Function
         }
         else {
-            $InputObject = $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
         }
 
-        foreach ($input in $InputObject) {
-            $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters Expect Success"
+        $objectCount = $InputObject.Count
+        $objectStep = 1
 
-            # Test if the name of the test does not become too long
-            if ($testName.Length -gt 128) {
-                Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-            }
+        if ($objectCount -ge 1) {
+            foreach ($input in $InputObject) {
+                $task = "Creating function test $($objectStep) of $($objectCount)"
+                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-            $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+                $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters"
 
-            # Get the parameters
-            $parameters = $input.Parameters
-
-            if ($parameters.Count -ge 1) {
-                # Import the template
-                try {
-                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "FunctionParameterTest.template")
-                }
-                catch {
-                    Stop-PSFFunction -Message "Could not import test template 'FunctionParameterTest.template'" -Target $testName -ErrorRecord $_
+                # Test if the name of the test does not become too long
+                if ($testName.Length -gt 128) {
+                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
                 }
 
-                $paramTextCollection = @()
+                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
 
-                # Loop through the parameters
-                foreach ($parameter in $parameters) {
-                    $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
-                    $paramTextCollection += $paramText
-                }
+                # Get the parameters
+                $parameters = $input.Parameters
 
-                # Replace the markers with the content
-                $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
-                $script = $script.Replace("___CREATOR___", $creator)
-                $script = $script.Replace("___DATE___", $date)
-                $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
-
-                # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                if ($parameters.Count -ge 1) {
+                    # Import the template
                     try {
-                        Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
-                        $script | Out-File -FilePath $fileName
-
-                        [PSCustomObject]@{
-                            TestName = $testName
-                            Category = "FunctionParameter"
-                            Creator  = $creator
-                            FileName = $fileName
-                        }
+                        $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "FunctionParameterTest.template")
                     }
                     catch {
-                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not import test template 'FunctionParameterTest.template'" -Target $testName -ErrorRecord $_
+                    }
+
+                    $paramTextCollection = @()
+
+                    # Loop through the parameters
+                    foreach ($parameter in $parameters) {
+                        $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        $paramTextCollection += $paramText
+                    }
+
+                    # Replace the markers with the content
+                    $script = $script.Replace("___TESTNAME___", $testName)
+                    $script = $script.Replace("___SCHEMA___", $input.Schema)
+                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___CREATOR___", $creator)
+                    $script = $script.Replace("___DATE___", $date)
+                    $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
+
+                    # Write the test
+                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                        try {
+                            Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
+                            $script | Out-File -FilePath $fileName
+
+                            [PSCustomObject]@{
+                                TestName = $testName
+                                Category = "FunctionParameter"
+                                Creator  = $creator
+                                FileName = $fileName
+                            }
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        }
                     }
                 }
-            }
-            else {
-                Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
+                else {
+                    Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
+                }
+
+                $functionStep++
             }
         }
     }

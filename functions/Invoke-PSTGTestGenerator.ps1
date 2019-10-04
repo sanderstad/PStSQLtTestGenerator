@@ -165,7 +165,14 @@ function Invoke-PSTGTestGenerator {
         # Create the database tests
         #########################################################################
 
+        $totalSteps = 5
+        $currentStep = 1
+        $task = "Creating Unit Tests"
+
         if (-not $SkipDatabaseTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             try {
                 # Create the collation test
                 New-PSTGDatabaseCollationTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -EnableException
@@ -179,7 +186,13 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the function tests
         #########################################################################
+
+        $currentStep = 2
+
         if (-not $SkipFunctionTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the function existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Function -OutputPath $OutputPath -EnableException
@@ -200,7 +213,13 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the procedure tests
         #########################################################################
+
+        $currentStep = 3
+
         if (-not $SkipProcedureTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the procedure existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Procedure -OutputPath $OutputPath -EnableException
@@ -221,7 +240,12 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the table tests
         #########################################################################
+
+        $currentStep = 4
+
         if (-not $SkipTableTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the table existence tests
             try {
@@ -243,7 +267,13 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the view tests
         #########################################################################
+
+        $currentStep = 5
+
         if (-not $SkipViewTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the view existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $View -OutputPath $OutputPath -EnableException

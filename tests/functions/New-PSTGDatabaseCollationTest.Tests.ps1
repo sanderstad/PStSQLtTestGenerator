@@ -16,7 +16,7 @@ Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
 Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     BeforeAll {
-        $server = Connect-DbaInstance -SqlInstance $script:instance
+        $server = Connect-DbaInstance -SqlInstance $script:sqlinstance
 
         if ($server.Databases.Name -notcontains $script:database) {
             $query = "CREATE DATABASE $($script:database)"
@@ -32,7 +32,8 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Create Database Collation Test" {
-        $result = New-PSTGDatabaseCollationTest -SqlInstance $script:instance -Database $script:database -OutputPath "$script:unittestfolder" -EnableException
+        $result = @()
+        $result += New-PSTGDatabaseCollationTest -SqlInstance $script:sqlinstance -Database $script:database -OutputPath "$script:unittestfolder" -EnableException
         $file = Get-Item -Path $result.FileName
 
         It "Should return a result" {
@@ -50,7 +51,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     AfterAll {
-        #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false -EnableException
+        $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false -EnableException
 
         $null = Remove-Item -Path $script:unittestfolder -Recurse -Force -Confirm:$false
     }
