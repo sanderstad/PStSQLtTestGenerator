@@ -167,11 +167,12 @@ function Invoke-PSTGTestGenerator {
 
         $totalSteps = 5
         $currentStep = 1
-        $task = "Creating Database Tests"
-
-        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+        $task = "Creating Unit Tests"
 
         if (-not $SkipDatabaseTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             try {
                 # Create the collation test
                 New-PSTGDatabaseCollationTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -EnableException
@@ -187,11 +188,11 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
 
         $currentStep = 2
-        $task = "Creating Function Tests"
-
-        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
         if (-not $SkipFunctionTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the function existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Function -OutputPath $OutputPath -EnableException
@@ -214,11 +215,11 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
 
         $currentStep = 3
-        $task = "Creating Procedure Tests"
-
-        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
         if (-not $SkipProcedureTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the procedure existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Procedure -OutputPath $OutputPath -EnableException
@@ -241,11 +242,10 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
 
         $currentStep = 4
-        $task = "Creating Table Tests"
-
-        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
         if (-not $SkipTableTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the table existence tests
             try {
@@ -267,12 +267,13 @@ function Invoke-PSTGTestGenerator {
         #########################################################################
         # Create the view tests
         #########################################################################
-        $currentStep = 5
-        $task = "Creating View Tests"
 
-        Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+        $currentStep = 5
 
         if (-not $SkipViewTests) {
+
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
             # Create the view existence tests
             try {
                 New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $View -OutputPath $OutputPath -EnableException
