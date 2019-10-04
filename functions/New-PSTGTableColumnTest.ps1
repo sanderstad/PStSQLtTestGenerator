@@ -63,7 +63,7 @@ function New-PSTGTableColumnTest {
         [string]$OutputPath,
         [string]$TemplateFolder,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object]$InputObject,
+        [object[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -114,6 +114,9 @@ function New-PSTGTableColumnTest {
         if ($Database -notin $server.Databases.Name) {
             Stop-PSFFunction -Message "Database '$Database' cannot be found on '$SqlInstance'" -Target $Database
         }
+
+        $task = "Collecting objects"
+        Write-Progress -ParentId 1 -Activity " Table Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
@@ -124,19 +127,20 @@ function New-PSTGTableColumnTest {
             return
         }
 
-        $InputObject = $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
-
         if ($Table) {
-            $InputObject = $InputObject | Where-Object Name -in $Table
+            $InputObject += $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+        }
+        else {
+            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
         }
 
         $objectCount = $InputObject.Count
         $objectStep = 1
 
-        if ($InputObject.Count -ge 1) {
+        if ($objectCount -ge 1) {
             foreach ($input in $InputObject) {
                 $task = "Creating function $($objectStep) of $($objectCount)"
-                Write-Progress -ParentId 1 -Activity Updating -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If table $($input.Schema).$($input.Name) has the correct columns"
 
