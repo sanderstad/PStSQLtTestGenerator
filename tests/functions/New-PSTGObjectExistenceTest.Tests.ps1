@@ -34,6 +34,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
 
     Context "Create Object Existence Test" {
         $result = @()
+
         $result += New-PSTGObjectExistenceTest -SqlInstance $script:sqlinstance -Database $script:database -OutputPath $script:unittestfolder -EnableException
 
         $file = Get-Item -Path $result[0].FileName
