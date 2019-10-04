@@ -51,7 +51,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
-    Context "Using Pipeline" {
+    <# Context "Using Pipeline" {
         $tables = $server.Databases[$($script:database)].Tables
 
         $result = @()
@@ -70,7 +70,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         It "Result should have correct values" {
             $file.FullName | Should -Be $result[0].FileName
         }
-    }
+    } #>
 
     AfterAll {
         #$null = Remove-DbaDatabase -SqlInstance $script:instance -Database $script:database -Confirm:$false
