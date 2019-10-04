@@ -52,10 +52,10 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
+        $tables = $server.Databases[$($script:database)].Tables
+
         $result = @()
         $result += $tables.Name | New-PSTGTableColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
-
-        $tables = $server.Databases[$($script:database)].Tables
 
         $file = Get-Item -Path $result[0].FileName
 

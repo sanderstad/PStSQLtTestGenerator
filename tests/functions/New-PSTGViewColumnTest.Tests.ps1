@@ -52,10 +52,10 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
     }
 
     Context "Using Pipeline" {
+        $views = $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
+
         $result = @()
         $result += $views.Name | New-PSTGViewColumnTest -SqlInstance $script:instance -Database $script:database -OutputPath $script:unittestfolder -EnableException
-
-        $views = $server.Databases[$($script:database)].Views | Where-Object IsSystemObject -eq $false
 
         $file = Get-Item -Path $result[0].FileName
 
