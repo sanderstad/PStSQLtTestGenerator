@@ -7,7 +7,7 @@ Date		Who						Notes
 ----------	---						--------------------------------------------------------------
 ___DATE___	___CREATOR___				Initial procedure
 */
-CREATE PROCEDURE [TestBasic].[___TESTNAME___]
+CREATE PROCEDURE [___TESTCLASS___].[___TESTNAME___]
 AS
 BEGIN
     SET NOCOUNT ON;
