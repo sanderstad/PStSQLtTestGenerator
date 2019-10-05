@@ -28,6 +28,9 @@ function New-PSTGObjectExistenceTest {
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
+    .PARAMETER TestClass
+        Test class name to use for the test
+
     .PARAMETER InputObject
         Takes the parameters required from a Login object that has been piped into the command
 
@@ -62,6 +65,7 @@ function New-PSTGObjectExistenceTest {
         [string[]]$Object,
         [string]$OutputPath,
         [string]$TemplateFolder,
+        [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
@@ -101,6 +105,13 @@ function New-PSTGObjectExistenceTest {
 
         if (-not (Test-Path -Path $TemplateFolder)) {
             Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+        }
+
+        $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+        $creator = $env:username
+
+        if (-not $TestClass) {
+            $TestClass = "TestBasic"
         }
 
         # Connect to the server
@@ -168,8 +179,6 @@ function New-PSTGObjectExistenceTest {
                 }
 
                 $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-                $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-                $creator = $env:username
 
                 # Import the template
                 try {

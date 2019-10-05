@@ -25,6 +25,9 @@ function New-PSTGDatabaseCollationTest {
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
+    .PARAMETER TestClass
+        Test class name to use for the test
+
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
 
@@ -50,6 +53,7 @@ function New-PSTGDatabaseCollationTest {
         [string]$Database,
         [Parameter(Mandatory)][string]$OutputPath,
         [string]$TemplateFolder,
+        [string]$TestClass,
         [switch]$EnableException
     )
 
@@ -68,6 +72,10 @@ function New-PSTGDatabaseCollationTest {
         # Test if the name of the test does not become too long
         if ($testName.Length -gt 128) {
             Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+        }
+
+        if (-not $TestClass) {
+            $TestClass = "TestBasic"
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern

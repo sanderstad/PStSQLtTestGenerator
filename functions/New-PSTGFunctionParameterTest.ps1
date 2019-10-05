@@ -28,6 +28,9 @@ function New-PSTGFunctionParameterTest {
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
+    .PARAMETER TestClass
+        Test class name to use for the test
+
     .PARAMETER InputObject
         Takes the parameters required from a Function object that has been piped into the command
 
@@ -62,6 +65,7 @@ function New-PSTGFunctionParameterTest {
         [string[]]$Function,
         [string]$OutputPath,
         [string]$TemplateFolder,
+        [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
@@ -101,6 +105,10 @@ function New-PSTGFunctionParameterTest {
 
         if (-not (Test-Path -Path $TemplateFolder)) {
             Stop-PSFFunction -Message "Could not find template folder" -Target $OutputPath
+        }
+
+        if (-not $TestClass) {
+            $TestClass = "TestBasic"
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
