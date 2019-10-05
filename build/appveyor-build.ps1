@@ -108,7 +108,8 @@ $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n")
 #endregion Update the psm1 file
 
 #region Updating the Module Version
-
+Write-PSFMessage -Level Important -Message "Branch: $($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH)"
+Write-PSFMessage -Level Important -Message "Branch: $($env:APPVEYOR_REPO_BRANCH)"
 if ($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH -eq 'master') {
     #if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
     if ($AutoVersion) {
