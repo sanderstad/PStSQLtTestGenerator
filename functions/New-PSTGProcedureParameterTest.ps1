@@ -28,6 +28,9 @@ function New-PSTGProcedureParameterTest {
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
+    .PARAMETER TestClass
+        Test class name to use for the test
+
     .PARAMETER InputObject
         Takes the parameters required from a Procedure object that has been piped into the command
 
@@ -62,6 +65,7 @@ function New-PSTGProcedureParameterTest {
         [string[]]$Procedure,
         [string]$OutputPath,
         [string]$TemplateFolder,
+        [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
         [object[]]$InputObject,
         [switch]$EnableException
@@ -101,6 +105,10 @@ function New-PSTGProcedureParameterTest {
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the output directory" -Target $OutputPath -ErrorRecord $_
             }
+        }
+
+        if (-not $TestClass) {
+            $TestClass = "TestBasic"
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
@@ -179,6 +187,7 @@ function New-PSTGProcedureParameterTest {
                     }
 
                     # Replace the markers with the content
+                    $script = $script.Replace("___TESTCLASS___", $TestClass)
                     $script = $script.Replace("___TESTNAME___", $testName)
                     $script = $script.Replace("___SCHEMA___", $input.Schema)
                     $script = $script.Replace("___NAME___", $input.Name)

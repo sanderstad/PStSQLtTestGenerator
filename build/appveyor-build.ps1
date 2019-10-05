@@ -109,7 +109,8 @@ $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n")
 
 #region Updating the Module Version
 
-if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
+if ($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH -eq 'master') {
+    #if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
     if ($AutoVersion) {
         Write-PSFMessage -Level Important -Message "Updating module version numbers."
         try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
