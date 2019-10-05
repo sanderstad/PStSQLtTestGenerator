@@ -124,6 +124,7 @@ function New-PSTGDatabaseCollationTest {
         }
 
         # Replace the markers with the content
+        $script = $script.Replace("___TESTCLASS___", $TestClass)
         $script = $script.Replace("___TESTNAME___", $testName)
         $script = $script.Replace("___DATABASE___", $Database)
         $script = $script.Replace("___COLLATION___", $server.Databases[$Database].Collation)

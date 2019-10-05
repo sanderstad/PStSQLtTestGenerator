@@ -189,6 +189,7 @@ function New-PSTGObjectExistenceTest {
                 }
 
                 # Replace the markers with the content
+                $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
                 $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
                 $script = $script.Replace("___SCHEMA___", $input.Schema)

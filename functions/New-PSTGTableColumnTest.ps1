@@ -186,6 +186,7 @@ function New-PSTGTableColumnTest {
                 }
 
                 # Replace the markers with the content
+                $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
                 $script = $script.Replace("___SCHEMA___", $input.Schema)
                 $script = $script.Replace("___NAME___", $input.Name)
