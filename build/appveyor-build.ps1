@@ -108,40 +108,35 @@ $fileData = $fileData.Replace('"<compile code into here>"', ($text -join "`n`n")
 #endregion Update the psm1 file
 
 #region Updating the Module Version
+Write-PSFMessage -Level Important -Message "Branch: $($env:APPVEYOR_REPO_BRANCH)"
+#if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
+if ($SkipPublish) { return }
+if ($AutoVersion) {
+    Write-PSFMessage -Level Important -Message "Updating module version numbers."
+    try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
+    catch {
+        Stop-PSFFunction -Message "Failed to access $($Repository)" -EnableException $true -ErrorRecord $_
+    }
+    if (-not $remoteVersion) {
+        Stop-PSFFunction -Message "Couldn't find PStSQLtTestGenerator on repository $($Repository)" -EnableException $true
+    }
+    $newBuildNumber = $remoteVersion.Build + 1
+    [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
+    Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
+}
 
-if ($env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH -eq 'master') {
-    #if ($env:APPVEYOR_REPO_BRANCH -eq 'master') {
-    if ($AutoVersion) {
-        Write-PSFMessage -Level Important -Message "Updating module version numbers."
-        try { [version]$remoteVersion = (Find-Module 'PStSQLtTestGenerator' -Repository $Repository -ErrorAction Stop).Version }
-        catch {
-            Stop-PSFFunction -Message "Failed to access $($Repository)" -EnableException $true -ErrorRecord $_
-        }
-        if (-not $remoteVersion) {
-            Stop-PSFFunction -Message "Couldn't find PStSQLtTestGenerator on repository $($Repository)" -EnableException $true
-        }
-        $newBuildNumber = $remoteVersion.Build + 1
-        [version]$localVersion = (Import-PowerShellDataFile -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1").ModuleVersion
-        Update-ModuleManifest -Path "$($publishDir.FullName)\PStSQLtTestGenerator\PStSQLtTestGenerator.psd1" -ModuleVersion "$($localVersion.Major).$($localVersion.Minor).$($newBuildNumber)"
-    }
-
-    #region Publish
-    if ($SkipPublish) { return }
-    if ($LocalRepo) {
-        # Dependencies must go first
-        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
-        New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
-        Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
-        New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
-    }
-    else {
-        # Publish to Gallery
-        Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
-        Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
-    }
+#region Publish
+if ($LocalRepo) {
+    # Dependencies must go first
+    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
+    New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath .
+    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PStSQLtTestGenerator"
+    New-PSMDModuleNugetPackage -ModulePath "$($publishDir.FullName)\PStSQLtTestGenerator" -PackagePath .
 }
 else {
-    Write-PSFMessage -Level Important -Message "Skipping version increment and publish for branch $env:APPVEYOR_REPO_BRANCH"
+    # Publish to Gallery
+    Write-PSFMessage -Level Important -Message "Publishing the PStSQLtTestGenerator module to $($Repository)"
+    Publish-Module -Path "$($publishDir.FullName)\PStSQLtTestGenerator" -NuGetApiKey $ApiKey -Force -Repository $Repository
 }
 #endregion Updating the Module Version
 
