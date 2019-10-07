@@ -1,2 +1,2 @@
-appveyor.yml
+.appveyor.yml
 build/appveyor-build.ps1
