@@ -152,7 +152,7 @@ function New-PSTGTableColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($input in $InputObject) {
-                $task = "Creating function $($objectStep) of $($objectCount)"
+                $task = "Creating table $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If table $($input.Schema).$($input.Name) has the correct columns"
