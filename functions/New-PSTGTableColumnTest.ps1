@@ -141,7 +141,7 @@ function New-PSTGTableColumnTest {
         }
 
         if ($Table) {
-            $InputObject += $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+            $InputObject += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table } | Select-Object Schema, Name, Columns
         }
         else {
             $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
