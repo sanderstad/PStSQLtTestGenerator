@@ -167,7 +167,6 @@ function New-PSTGIndexColumnTest {
             $objects = $objects | Where-Object Name -in $Index
         }
 
-        $objects.Count
         $objectCount = $objects.Count
         $objectStep = 1
 
