@@ -44,8 +44,10 @@
     'New-PSTGObjectExistenceTest',
     'New-PSTGDatabaseCollationTest',
     'New-PSTGFunctionParameterTest',
+    'New-PSTGIndexColumnTest',
     'New-PSTGProcedureParameterTest',
     'New-PSTGTableColumnTest',
+    'New-PSTGTableIndexTest',
     'New-PSTGViewColumnTest'
 
     # Cmdlets to export from this module

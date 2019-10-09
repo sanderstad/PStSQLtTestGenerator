@@ -1,0 +1,55 @@
+/*
+Description:
+Test if the index has the correct columns
+
+Changes:
+Date		Who						Notes
+----------	---						--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial procedure
+*/
+CREATE PROCEDURE [___TESTCLASS___].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+    -- Create the tables
+    CREATE TABLE #actual
+    (
+        [ColumnName] sysname NOT NULL
+    );
+
+    CREATE TABLE #expected
+    (
+        [ColumnName] sysname NOT NULL
+    );
+
+    INSERT INTO #expected
+    (
+        ColumnName
+    )
+    VALUES
+___COLUMNS___
+
+    ----- ACT ----------------------------------------------------
+
+    INSERT INTO #actual
+    (
+        ColumnName
+    )
+    SELECT ind.name AS IndexName
+    FROM sys.indexes ind
+        INNER JOIN sys.index_columns ic
+            ON ind.object_id = ic.object_id
+            AND ind.index_id = ic.index_id
+        INNER JOIN sys.tables t
+            ON ind.object_id = t.object_id
+    WHERE t.name = 'Schedule';
+
+    ----- ASSERT -------------------------------------------------
+
+    -- Assert to have the same values
+    EXEC tSQLt.AssertEqualsTable @Expected = '#expected', @Actual = '#actual';
+
+END;
+GO

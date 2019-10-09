@@ -32,6 +32,9 @@ function Invoke-PSTGTestGenerator {
     .PARAMETER OutputPath
         Folder where the files should be written to
 
+    .PARAMETER Creator
+        The person that created the tests. By default the command will get the environment username
+
     .PARAMETER TemplateFolder
         The template folder containing all the templates for the tests.
         By default it will use the internal templates directory
@@ -44,6 +47,9 @@ function Invoke-PSTGTestGenerator {
 
     .PARAMETER Table
         Filter out specific tables that should only be processed
+
+    .PARAMETER Index
+        Filter out specific indexes that should be processed
 
     .PARAMETER View
         Filter out specific views that should only be processed
@@ -61,6 +67,9 @@ function Invoke-PSTGTestGenerator {
         Skip the table tests
 
     .PARAMETER SkipViewTests
+        Skip the view tests
+
+    .PARAMETER SkipIndexTests
         Skip the view tests
 
     .PARAMETER TestClass
@@ -102,15 +111,18 @@ function Invoke-PSTGTestGenerator {
         [pscredential]$SqlCredential,
         [string]$Database,
         [string]$OutputPath,
+        [string]$Creator,
         [string]$TemplateFolder,
         [string[]]$Function,
         [string[]]$Procedure,
         [string[]]$Table,
+        [string[]]$Index,
         [string[]]$View,
         [switch]$SkipDatabaseTests,
         [switch]$SkipFunctionTests,
         [switch]$SkipProcedureTests,
         [switch]$SkipTableTests,
+        [switch]$SkipIndexTests,
         [switch]$SkipViewTests,
         [string]$TestClass,
         [switch]$EnableException
@@ -136,6 +148,10 @@ function Invoke-PSTGTestGenerator {
         if (-not (Test-Path -Path $OutputPath)) {
             Stop-PSFFunction -Message "Could not access output path" -Category ResourceUnavailable -Target $OutputPath
             return
+        }
+
+        if (-not $Creator) {
+            $Creator = $env:username
         }
 
         if (-not $TemplateFolder) {
@@ -173,17 +189,16 @@ function Invoke-PSTGTestGenerator {
         # Create the database tests
         #########################################################################
 
-        $totalSteps = 5
+        $totalSteps = 7
         $currentStep = 1
         $task = "Creating Unit Tests"
 
         if (-not $SkipDatabaseTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             try {
                 # Create the collation test
-                New-PSTGDatabaseCollationTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -TemplateFolder $TemplateFolder -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGDatabaseCollationTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Creator $Creator -TemplateFolder $TemplateFolder -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the database collation test" -Target $Database -ErrorRecord $_
@@ -198,12 +213,11 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 2
 
         if (-not $SkipFunctionTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the function existence tests
             try {
-                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Function -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Function -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the function existence tests" -Target $Database -ErrorRecord $_
@@ -211,7 +225,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the function parameter tests
             try {
-                New-PSTGFunctionParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Function $Function -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGFunctionParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Function $Function -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the function parameter tests" -Target $Database -ErrorRecord $_
@@ -225,12 +239,11 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 3
 
         if (-not $SkipProcedureTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the procedure existence tests
             try {
-                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Procedure -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Procedure -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the procedure existence tests" -Target $Database -ErrorRecord $_
@@ -238,7 +251,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the procedure parameter tests
             try {
-                New-PSTGProcedureParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Procedure $Procedure -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGProcedureParameterTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Procedure $Procedure -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the procedure parameter tests" -Target $Database -ErrorRecord $_
@@ -252,12 +265,11 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 4
 
         if (-not $SkipTableTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the table existence tests
             try {
-                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Table -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $Table -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table existence tests" -Target $Database -ErrorRecord $_
@@ -265,7 +277,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the table column tests
             try {
-                New-PSTGTableColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGTableColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table column tests" -Target $Database -ErrorRecord $_
@@ -273,18 +285,53 @@ function Invoke-PSTGTestGenerator {
         }
 
         #########################################################################
-        # Create the view tests
+        # Create the table index tests
         #########################################################################
 
         $currentStep = 5
 
-        if (-not $SkipViewTests) {
-
+        if (-not $SkipIndexTests) {
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the view existence tests
             try {
-                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $View -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGTableIndexTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
+            }
+        }
+
+        #########################################################################
+        # Create the index tests
+        #########################################################################
+
+        $currentStep = 6
+
+        if (-not $SkipIndexTests) {
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
+            # Create the view existence tests
+            try {
+                New-PSTGIndexColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -Index $Index -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
+            }
+        }
+
+        #########################################################################
+        # Create the view tests
+        #########################################################################
+
+        $currentStep = 7
+
+        if (-not $SkipViewTests) {
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
+            # Create the view existence tests
+            try {
+                New-PSTGObjectExistenceTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Object $View -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
@@ -292,7 +339,7 @@ function Invoke-PSTGTestGenerator {
 
             # Create the view column tests
             try {
-                New-PSTGViewColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -View $View -OutputPath $OutputPath -TestClass $TestClass -EnableException
+                New-PSTGViewColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -View $View -Creator $Creator -OutputPath $OutputPath -TestClass $TestClass -EnableException
             }
             catch {
                 Stop-PSFFunction -Message "Something went wrong creating the table column tests" -Target $Database -ErrorRecord $_

@@ -25,6 +25,9 @@ function New-PSTGTableColumnTest {
     .PARAMETER OutputPath
         Path to output the test to
 
+    .PARAMETER Creator
+        The person that created the tests. By default the command will get the environment username
+
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
@@ -64,6 +67,7 @@ function New-PSTGTableColumnTest {
         [string]$Database,
         [string[]]$Table,
         [string]$OutputPath,
+        [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -112,7 +116,10 @@ function New-PSTGTableColumnTest {
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-        $creator = $env:username
+
+        if (-not $Creator) {
+            $Creator = $env:username
+        }
 
         # Connect to the server
         try {
@@ -140,19 +147,25 @@ function New-PSTGTableColumnTest {
             return
         }
 
-        if ($Table) {
-            $InputObject += $server.Databases[$Database].Tables | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Columns
         }
         else {
-            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
         }
 
-        $objectCount = $InputObject.Count
+        if ($Table) {
+            $objects = $objects | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table }
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
-                $task = "Creating function $($objectStep) of $($objectCount)"
+            foreach ($input in $objects) {
+                $task = "Creating table $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If table $($input.Schema).$($input.Name) has the correct columns"
