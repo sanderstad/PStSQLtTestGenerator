@@ -28,6 +28,9 @@ function New-PSTGIndexColumnTest {
     .PARAMETER OutputPath
         Path to output the test to
 
+    .PARAMETER Creator
+        The person that created the tests. By default the command will get the environment username
+
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
@@ -68,6 +71,7 @@ function New-PSTGIndexColumnTest {
         [string[]]$Table,
         [string[]]$Index,
         [string]$OutputPath,
+        [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -116,7 +120,10 @@ function New-PSTGIndexColumnTest {
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-        $creator = $env:username
+
+        if (-not $Creator) {
+            $Creator = $env:username
+        }
 
         # Connect to the server
         try {

@@ -25,6 +25,9 @@ function New-PSTGObjectExistenceTest {
     .PARAMETER OutputPath
         Path to output the test to
 
+    .PARAMETER Creator
+        The person that created the tests. By default the command will get the environment username
+
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
@@ -64,6 +67,7 @@ function New-PSTGObjectExistenceTest {
         [string]$Database,
         [string[]]$Object,
         [string]$OutputPath,
+        [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -108,7 +112,10 @@ function New-PSTGObjectExistenceTest {
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-        $creator = $env:username
+
+        if (-not $Creator) {
+            $Creator = $env:username
+        }
 
         if (-not $TestClass) {
             $TestClass = "TestBasic"
