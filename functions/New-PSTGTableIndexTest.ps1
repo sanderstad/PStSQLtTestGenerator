@@ -1,10 +1,10 @@
-function New-PSTGViewColumnTest {
+function New-PSTGTableIndexTest {
     <#
     .SYNOPSIS
-        Function to create view column tests
+        Function to test the indexes for a table
 
     .DESCRIPTION
-        The function will retrieve the columns for a view and create a test for it
+        The function will retrieve the current indexes for a table and create a test for it
 
     .PARAMETER SqlInstance
         The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
@@ -19,8 +19,8 @@ function New-PSTGViewColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
-    .PARAMETER View
-        View(s) to create tests forr
+    .PARAMETER Table
+        Table(s) to create tests for
 
     .PARAMETER OutputPath
         Path to output the test to
@@ -35,7 +35,7 @@ function New-PSTGViewColumnTest {
         Test class name to use for the test
 
     .PARAMETER InputObject
-        Takes the parameters required from a View object that has been piped into the command
+        Takes the parameters required from a Table object that has been piped into the command
 
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
@@ -49,16 +49,14 @@ function New-PSTGViewColumnTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGViewColumnTest -View $view -OutputPath $OutputPath
+        New-PSTGTableIndexTest -Table $table -OutputPath $OutputPath
 
-        Create a new view column test
+        Create a new table column test
 
     .EXAMPLE
-        $views | New-PSTGViewColumnTest -OutputPath $OutputPath
+        $tables | New-PSTGTableIndexTest -OutputPath $OutputPath
 
         Create the tests using pipelines
-
-
     #>
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -67,7 +65,7 @@ function New-PSTGViewColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [string[]]$View,
+        [string[]]$Table,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
@@ -134,32 +132,32 @@ function New-PSTGViewColumnTest {
 
         # Check if the database exists
         if ($Database -notin $server.Databases.Name) {
-            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+            Stop-PSFFunction -Message "Database '$Database' cannot be found on '$SqlInstance'" -Target $Database
         }
 
         $task = "Collecting objects"
-        Write-Progress -ParentId 1 -Activity " View Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
+        Write-Progress -ParentId 1 -Activity " Table Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $View -and -not $SqlInstance) {
-            Stop-PSFFunction -Message "You must pipe in an object or specify a View"
+        if (-not $InputObject -and -not $Table -and -not $SqlInstance) {
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Table"
             return
         }
 
         $objects = @()
 
         if ($InputObject) {
-            $objects += $server.Databases[$Database].Views | Where-Object Name -in $InputObject | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Indexes
         }
         else {
-            $objects += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, Indexes
         }
 
-        if ($View) {
-            $objects = $objects | Where-Object Name -in $View
+        if ($Table) {
+            $objects = $objects | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table }
         }
 
         $objectCount = $objects.Count
@@ -167,10 +165,10 @@ function New-PSTGViewColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($input in $objects) {
-                $task = "Creating view $($objectStep) of $($objectCount)"
+                $task = "Creating index $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns"
+                $testName = "test If table $($input.Schema).$($input.Name) has the correct indexes"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -183,21 +181,21 @@ function New-PSTGViewColumnTest {
 
                 # Import the template
                 try {
-                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ViewColumnTest.template")
+                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableIndexTest.template")
                 }
                 catch {
-                    Stop-PSFFunction -Message "Could not import test template 'ViewColumnTest.template'" -Target $testName -ErrorRecord $_
+                    Stop-PSFFunction -Message "Could not import test template 'TableIndexTest.template'" -Target $testName -ErrorRecord $_
                 }
 
                 # Get the columns
-                $columns = $input.Columns
+                $indexes = $input.Indexes
 
-                $columnTextCollection = @()
+                $indexTextCollection = @()
 
                 # Loop through the columns
-                foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
-                    $columnTextCollection += $columnText
+                foreach ($index in $indexes) {
+                    $indexText = "`t('$($index.Name)')"
+                    $indexTextCollection += $indexText
                 }
 
                 # Replace the markers with the content
@@ -207,17 +205,17 @@ function New-PSTGViewColumnTest {
                 $script = $script.Replace("___NAME___", $input.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
-                $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+                $script = $script.Replace("___INDEXES___", ($indexTextCollection -join ",`n") + ";")
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Index Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
+                        Write-PSFMessage -Message "Creating table index test for table '$($input.Schema).$($input.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{
                             TestName = $testName
-                            Category = "ViewColumn"
+                            Category = "TableIndex"
                             Creator  = $creator
                             FileName = $fileName
                         }

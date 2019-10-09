@@ -25,6 +25,9 @@ function New-PSTGProcedureParameterTest {
     .PARAMETER OutputPath
         Path to output the test to
 
+    .PARAMETER Creator
+        The person that created the tests. By default the command will get the environment username
+
     .PARAMETER TemplateFolder
         Path to template folder. By default the internal templates folder will be used
 
@@ -64,6 +67,7 @@ function New-PSTGProcedureParameterTest {
         [string]$Database,
         [string[]]$Procedure,
         [string]$OutputPath,
+        [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
@@ -112,7 +116,10 @@ function New-PSTGProcedureParameterTest {
         }
 
         $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-        $creator = $env:username
+
+        if (-not $Creator) {
+            $Creator = $env:username
+        }
 
         # Connect to the server
         try {
@@ -140,18 +147,24 @@ function New-PSTGProcedureParameterTest {
             return
         }
 
-        if ($Procedure) {
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $Procedure
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].StoredProcedures | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Parameters
         }
         else {
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $objects += $server.Databases[$Database].StoredProcedures | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Parameters
         }
 
-        $objectCount = $InputObject.Count
+        if ($Procedure) {
+            $objects = $objects | Where-Object Name -in $Procedure
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating procedure $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 

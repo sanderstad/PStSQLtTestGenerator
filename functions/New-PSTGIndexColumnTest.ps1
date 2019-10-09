@@ -1,10 +1,10 @@
-function New-PSTGViewColumnTest {
+function New-PSTGIndexColumnTest {
     <#
     .SYNOPSIS
-        Function to create view column tests
+        Function to test the columns for an index
 
     .DESCRIPTION
-        The function will retrieve the columns for a view and create a test for it
+        The function will retrieve the current columns for an index and create a test for it
 
     .PARAMETER SqlInstance
         The target SQL Server instance or instances. Server version must be SQL Server version 2012 or higher.
@@ -19,8 +19,11 @@ function New-PSTGViewColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
-    .PARAMETER View
-        View(s) to create tests forr
+    .PARAMETER Table
+        Table(s) to create tests for
+
+    .PARAMETER Index
+        Index(es) to create tests for
 
     .PARAMETER OutputPath
         Path to output the test to
@@ -35,7 +38,7 @@ function New-PSTGViewColumnTest {
         Test class name to use for the test
 
     .PARAMETER InputObject
-        Takes the parameters required from a View object that has been piped into the command
+        Takes the parameters required from a Table object that has been piped into the command
 
     .PARAMETER WhatIf
         Shows what would happen if the command were to run. No actions are actually performed.
@@ -49,16 +52,14 @@ function New-PSTGViewColumnTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGViewColumnTest -View $view -OutputPath $OutputPath
+        New-PSTGIndexColumnTest -Table $table -OutputPath $OutputPath
 
-        Create a new view column test
+        Create a new index column test
 
     .EXAMPLE
-        $views | New-PSTGViewColumnTest -OutputPath $OutputPath
+        $tables | New-PSTGIndexColumnTest -OutputPath $OutputPath
 
         Create the tests using pipelines
-
-
     #>
 
     [CmdletBinding(SupportsShouldProcess)]
@@ -67,7 +68,8 @@ function New-PSTGViewColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [string[]]$View,
+        [string[]]$Table,
+        [string[]]$Index,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
@@ -134,32 +136,42 @@ function New-PSTGViewColumnTest {
 
         # Check if the database exists
         if ($Database -notin $server.Databases.Name) {
-            Stop-PSFFunction -Message "Database cannot be found on '$SqlInstance'" -Target $Database
+            Stop-PSFFunction -Message "Database '$Database' cannot be found on '$SqlInstance'" -Target $Database
         }
 
         $task = "Collecting objects"
-        Write-Progress -ParentId 1 -Activity " View Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
+        Write-Progress -ParentId 1 -Activity " Index Columns" -Status 'Progress->' -CurrentOperation $task -Id 2
+
+        $tables = @()
+
+        if ($Table) {
+            $tables += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table } | Select-Object Schema, Name, Indexes
+        }
+        else {
+            $tables += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false } | Select-Object Schema, Name, Indexes
+        }
     }
 
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if (-not $InputObject -and -not $View -and -not $SqlInstance) {
-            Stop-PSFFunction -Message "You must pipe in an object or specify a View"
+        if (-not $InputObject -and -not $Table -and -not $SqlInstance) {
+            Stop-PSFFunction -Message "You must pipe in an object or specify a Table"
             return
         }
 
         $objects = @()
 
         if ($InputObject) {
-            $objects += $server.Databases[$Database].Views | Where-Object Name -in $InputObject | Select-Object Schema, Name, Columns
+            $objects += $tables.Indexes | Where-Object Name -in $InputObject | Select-Object Name, IndexedColumns
         }
         else {
-            $objects += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+            $objects += $tables.Indexes | Select-Object Name, IndexedColumns
         }
 
-        if ($View) {
-            $objects = $objects | Where-Object Name -in $View
+
+        if ($Index) {
+            $objects = $objects | Where-Object Name -in $Index
         }
 
         $objectCount = $objects.Count
@@ -167,10 +179,10 @@ function New-PSTGViewColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($input in $objects) {
-                $task = "Creating view $($objectStep) of $($objectCount)"
+                $task = "Creating index $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns"
+                $testName = "test If index $($input.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -183,41 +195,40 @@ function New-PSTGViewColumnTest {
 
                 # Import the template
                 try {
-                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "ViewColumnTest.template")
+                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "IndexColumnTest.template")
                 }
                 catch {
-                    Stop-PSFFunction -Message "Could not import test template 'ViewColumnTest.template'" -Target $testName -ErrorRecord $_
+                    Stop-PSFFunction -Message "Could not import test template 'IndexColumnTest.template'" -Target $testName -ErrorRecord $_
                 }
 
                 # Get the columns
-                $columns = $input.Columns
+                $columns = $input.IndexedColumns
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                    $columnText = "`t('$($column.Name)')"
                     $columnTextCollection += $columnText
                 }
 
                 # Replace the markers with the content
                 $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
                 $script = $script.Replace("___NAME___", $input.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
                 $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Index Column Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
+                        Write-PSFMessage -Message "Creating index column test for index '$($input.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{
                             TestName = $testName
-                            Category = "ViewColumn"
+                            Category = "IndexColumn"
                             Creator  = $creator
                             FileName = $fileName
                         }
