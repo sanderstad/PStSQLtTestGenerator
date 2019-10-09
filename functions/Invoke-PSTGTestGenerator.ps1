@@ -45,6 +45,9 @@ function Invoke-PSTGTestGenerator {
     .PARAMETER Table
         Filter out specific tables that should only be processed
 
+    .PARAMETER Index
+        Filter out specific indexes that should be processed
+
     .PARAMETER View
         Filter out specific views that should only be processed
 
@@ -61,6 +64,9 @@ function Invoke-PSTGTestGenerator {
         Skip the table tests
 
     .PARAMETER SkipViewTests
+        Skip the view tests
+
+    .PARAMETER SkipIndexTests
         Skip the view tests
 
     .PARAMETER TestClass
@@ -106,12 +112,14 @@ function Invoke-PSTGTestGenerator {
         [string[]]$Function,
         [string[]]$Procedure,
         [string[]]$Table,
+        [string[]]$Index,
         [string[]]$View,
         [switch]$SkipDatabaseTests,
         [switch]$SkipFunctionTests,
         [switch]$SkipProcedureTests,
         [switch]$SkipTableTests,
         [switch]$SkipViewTests,
+        [switch]$SkipIndexTests,
         [string]$TestClass,
         [switch]$EnableException
     )
@@ -173,12 +181,11 @@ function Invoke-PSTGTestGenerator {
         # Create the database tests
         #########################################################################
 
-        $totalSteps = 5
+        $totalSteps = 7
         $currentStep = 1
         $task = "Creating Unit Tests"
 
         if (-not $SkipDatabaseTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             try {
@@ -198,7 +205,6 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 2
 
         if (-not $SkipFunctionTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the function existence tests
@@ -225,7 +231,6 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 3
 
         if (-not $SkipProcedureTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the procedure existence tests
@@ -252,7 +257,6 @@ function Invoke-PSTGTestGenerator {
         $currentStep = 4
 
         if (-not $SkipTableTests) {
-
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the table existence tests
@@ -273,13 +277,48 @@ function Invoke-PSTGTestGenerator {
         }
 
         #########################################################################
-        # Create the view tests
+        # Create the table index tests
         #########################################################################
 
         $currentStep = 5
 
-        if (-not $SkipViewTests) {
+        if (-not $SkipIndexTests) {
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
+            # Create the view existence tests
+            try {
+                New-PSTGTableIndexTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -OutputPath $OutputPath -TestClass $TestClass -EnableException
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
+            }
+        }
+
+        #########################################################################
+        # Create the index tests
+        #########################################################################
+
+        $currentStep = 6
+
+        if (-not $SkipIndexTests) {
+            Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
+
+            # Create the view existence tests
+            try {
+                New-PSTGIndexColumnTest -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Table $Table -Index $Index -OutputPath $OutputPath -TestClass $TestClass -EnableException
+            }
+            catch {
+                Stop-PSFFunction -Message "Something went wrong creating the view existence tests" -Target $Database -ErrorRecord $_
+            }
+        }
+
+        #########################################################################
+        # Create the view tests
+        #########################################################################
+
+        $currentStep = 7
+
+        if (-not $SkipViewTests) {
             Write-Progress -Id 1 -Activity "Creating tSQLt Unit Tests" -Status 'Progress->' -PercentComplete $($currentStep / $totalSteps * 100) -CurrentOperation $task
 
             # Create the view existence tests
