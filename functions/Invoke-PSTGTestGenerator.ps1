@@ -118,8 +118,8 @@ function Invoke-PSTGTestGenerator {
         [switch]$SkipFunctionTests,
         [switch]$SkipProcedureTests,
         [switch]$SkipTableTests,
-        [switch]$SkipViewTests,
         [switch]$SkipIndexTests,
+        [switch]$SkipViewTests,
         [string]$TestClass,
         [switch]$EnableException
     )
