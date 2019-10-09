@@ -146,7 +146,7 @@ function New-PSTGFunctionParameterTest {
             $objects += $server.Databases[$Database].UserDefinedFunctions | Where-Object Name -in $InputObject | Select-Object Schema, Name, Parameters
         }
         else {
-            $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters
+            $objects += $server.Databases[$Database].UserDefinedFunctions | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Parameters
         }
 
         if ($Function) {
