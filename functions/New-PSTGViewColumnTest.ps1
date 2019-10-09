@@ -142,18 +142,24 @@ function New-PSTGViewColumnTest {
             return
         }
 
-        if ($View) {
-            $InputObject += $server.Databases[$Database].Views | Where-Object Name -in $View | Select-Object Schema, Name, Columns
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].Views | Where-Object Name -in $InputObject | Select-Object Schema, Name, Columns
         }
         else {
-            $InputObject += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
         }
 
-        $objectCount = $InputObject.Count
+        if ($View) {
+            $objects = $objects | Where-Object Name -in $View
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating view $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 

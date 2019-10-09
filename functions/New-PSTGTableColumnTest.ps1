@@ -140,18 +140,24 @@ function New-PSTGTableColumnTest {
             return
         }
 
-        if ($Table) {
-            $InputObject += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table } | Select-Object Schema, Name, Columns
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Columns
         }
         else {
-            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
         }
 
-        $objectCount = $InputObject.Count
+        if ($Table) {
+            $objects = $objects | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table }
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating table $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 

@@ -135,24 +135,30 @@ function New-PSTGObjectExistenceTest {
     process {
         if (Test-PSFFunctionInterrupt) { return }
 
-        if ($Object) {
-            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $Object
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
-            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
-            $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.Name -in $Object -and $_.IsSystemObject -eq $false }
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $InputObject
+            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
+            $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
+            $objects += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
         }
         else {
-            $InputObject += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } }
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
-            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
-            $InputObject += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } }
+            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
+            $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
+            $objects += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
         }
 
-        $objectCount = $InputObject.Count
+        if ($Object) {
+            $objects = $objects | Where-Object Name -in $Object
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating object existence test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 

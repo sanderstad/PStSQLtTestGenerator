@@ -140,18 +140,25 @@ function New-PSTGFunctionParameterTest {
             return
         }
 
-        if ($Function) {
-            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters | Where-Object Name -in $Function
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].UserDefinedFunctions | Where-Object Name -in $InputObject | Select-Object Schema, Name, Parameters
         }
         else {
-            $InputObject += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, Parameters
         }
 
-        $objectCount = $InputObject.Count
+        if ($Function) {
+            $objects = $objects | Where-Object Name -in $Function
+        }
+
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating function test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 

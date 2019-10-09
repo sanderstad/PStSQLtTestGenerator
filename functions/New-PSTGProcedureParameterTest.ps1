@@ -140,18 +140,24 @@ function New-PSTGProcedureParameterTest {
             return
         }
 
-        if ($Procedure) {
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $Procedure
+        $objects = @()
+
+        if ($InputObject) {
+            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object Name -in $InputObject
         }
         else {
-            $InputObject += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters, IsSystemObject | Where-Object IsSystemObject -eq $false
+            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, Parameters | Where-Object IsSystemObject -eq $false
         }
 
-        $objectCount = $InputObject.Count
+        if ($Procedure) {
+            $objects = $objects | Where-Object Name -in $Procedure
+        }
+
+        $objectCount = $objects.Count
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $InputObject) {
+            foreach ($input in $objects) {
                 $task = "Creating procedure $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
