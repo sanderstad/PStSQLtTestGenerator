@@ -165,63 +165,65 @@ function New-PSTGTableIndexTest {
 
         if ($objectCount -ge 1) {
             foreach ($input in $objects) {
-                $task = "Creating index $($objectStep) of $($objectCount)"
-                Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
+                if ($input.Indexes.Count -ge 1) {
+                    $task = "Creating index $($objectStep) of $($objectCount)"
+                    Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If table $($input.Schema).$($input.Name) has the correct indexes"
+                    $testName = "test If table $($input.Schema).$($input.Name) has the correct indexes"
 
-                # Test if the name of the test does not become too long
-                if ($testName.Length -gt 128) {
-                    Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
-                }
+                    # Test if the name of the test does not become too long
+                    if ($testName.Length -gt 128) {
+                        Stop-PSFFunction -Message "Name of the test is too long" -Target $testName
+                    }
 
-                $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
-                $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
-                $creator = $env:username
+                    $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
+                    $date = Get-Date -Format (Get-culture).DateTimeFormat.ShortDatePattern
+                    $creator = $env:username
 
-                # Import the template
-                try {
-                    $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableIndexTest.template")
-                }
-                catch {
-                    Stop-PSFFunction -Message "Could not import test template 'TableIndexTest.template'" -Target $testName -ErrorRecord $_
-                }
-
-                # Get the columns
-                $indexes = $input.Indexes
-
-                $indexTextCollection = @()
-
-                # Loop through the columns
-                foreach ($index in $indexes) {
-                    $indexText = "`t('$($index.Name)')"
-                    $indexTextCollection += $indexText
-                }
-
-                # Replace the markers with the content
-                $script = $script.Replace("___TESTCLASS___", $TestClass)
-                $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
-                $script = $script.Replace("___CREATOR___", $creator)
-                $script = $script.Replace("___DATE___", $date)
-                $script = $script.Replace("___INDEXES___", ($indexTextCollection -join ",`n") + ";")
-
-                # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Index Test")) {
+                    # Import the template
                     try {
-                        Write-PSFMessage -Message "Creating table index test for table '$($input.Schema).$($input.Name)'"
-                        $script | Out-File -FilePath $fileName
-
-                        [PSCustomObject]@{
-                            TestName = $testName
-                            Category = "TableIndex"
-                            Creator  = $creator
-                            FileName = $fileName
-                        }
+                        $script = Get-Content -Path (Join-Path -Path $TemplateFolder -ChildPath "TableIndexTest.template")
                     }
                     catch {
-                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        Stop-PSFFunction -Message "Could not import test template 'TableIndexTest.template'" -Target $testName -ErrorRecord $_
+                    }
+
+                    # Get the columns
+                    $indexes = $input.Indexes
+
+                    $indexTextCollection = @()
+
+                    # Loop through the columns
+                    foreach ($index in $indexes) {
+                        $indexText = "`t('$($index.Name)')"
+                        $indexTextCollection += $indexText
+                    }
+
+                    # Replace the markers with the content
+                    $script = $script.Replace("___TESTCLASS___", $TestClass)
+                    $script = $script.Replace("___TESTNAME___", $testName)
+                    $script = $script.Replace("___SCHEMA___", $input.Schema)
+                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___CREATOR___", $creator)
+                    $script = $script.Replace("___DATE___", $date)
+                    $script = $script.Replace("___INDEXES___", ($indexTextCollection -join ",`n") + ";")
+
+                    # Write the test
+                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Index Test")) {
+                        try {
+                            Write-PSFMessage -Message "Creating table index test for table '$($input.Schema).$($input.Name)'"
+                            $script | Out-File -FilePath $fileName
+
+                            [PSCustomObject]@{
+                                TestName = $testName
+                                Category = "TableIndex"
+                                Creator  = $creator
+                                FileName = $fileName
+                            }
+                        }
+                        catch {
+                            Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                        }
                     }
                 }
             }
