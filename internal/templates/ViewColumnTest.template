@@ -67,8 +67,8 @@ ___COLUMNS___
             ON st.user_type_id = c.user_type_id
     WHERE v.type = 'V'
           AND s.name = '___SCHEMA___'
-          AND t.name = '___NAME___'
-    ORDER BY t.name,
+          AND v.name = '___NAME___'
+    ORDER BY v.name,
              c.name;
 
     ----- ASSERT -------------------------------------------------
