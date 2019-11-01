@@ -166,11 +166,11 @@ function New-PSTGViewColumnTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($object in $objects) {
                 $task = "Creating view $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If view $($input.Schema).$($input.Name) has the correct columns"
+                $testName = "test If view $($object.Schema).$($object.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -190,29 +190,29 @@ function New-PSTGViewColumnTest {
                 }
 
                 # Get the columns
-                $columns = $input.Columns
+                $columns = $object.Columns
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
                     $columnTextCollection += $columnText
                 }
 
                 # Replace the markers with the content
                 $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___SCHEMA___", $object.Schema)
+                $script = $script.Replace("___NAME___", $object.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
                 $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing View Column Test")) {
+                if ($PSCmdlet.ShouldProcess("$($object.Schema).$($object.Name)", "Writing View Column Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating view column test for table '$($input.Schema).$($input.Name)'"
+                        Write-PSFMessage -Message "Creating view column test for table '$($object.Schema).$($object.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{
