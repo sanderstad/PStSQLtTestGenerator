@@ -195,7 +195,7 @@ function New-PSTGTableColumnTest {
                 # Loop through the columns
                 foreach ($column in $columns) {
                     if ($column.DataType.SqlDataType -eq 'UserDefinedDataType') {
-                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name]
+                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name].SystemType
                     }
                     else {
                         $columnDataType = $column.DataType.Name
