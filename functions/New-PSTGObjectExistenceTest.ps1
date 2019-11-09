@@ -155,7 +155,7 @@ function New-PSTGObjectExistenceTest {
                 ExcludeSystemObjects = $true
             }
 
-            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
+            $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
 
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
 
@@ -166,7 +166,7 @@ function New-PSTGObjectExistenceTest {
                 Type                 = "View"
                 ExcludeSystemObjects = $true
             }
-            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
+            $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
 
         }
         else {
@@ -180,7 +180,7 @@ function New-PSTGObjectExistenceTest {
                 ExcludeSystemObjects = $true
             }
 
-            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } }
+            $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } }
 
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
 
@@ -192,7 +192,7 @@ function New-PSTGObjectExistenceTest {
                 ExcludeSystemObjects = $true
             }
 
-            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } }
+            $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } }
         }
 
         if ($Object) {
