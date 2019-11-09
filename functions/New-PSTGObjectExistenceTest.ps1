@@ -146,15 +146,53 @@ function New-PSTGObjectExistenceTest {
 
         if ($InputObject) {
             $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $InputObject
-            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
+
+            $params = @{
+                SqlInstance          = $SqlInstance
+                SqlCredential        = $SqlCredential
+                Database             = $Database
+                Type                 = "StoredProcedure"
+                ExcludeSystemObjects = $true
+            }
+
+            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
+
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
-            $objects += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
+
+            $params = @{
+                SqlInstance          = $SqlInstance
+                SqlCredential        = $SqlCredential
+                Database             = $Database
+                Type                 = "View"
+                ExcludeSystemObjects = $true
+            }
+            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
+
         }
         else {
             $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } }
-            $objects += $server.Databases[$Database].StoredProcedures | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
+
+            $params = @{
+                SqlInstance          = $SqlInstance
+                SqlCredential        = $SqlCredential
+                Database             = $Database
+                Type                 = "StoredProcedure"
+                ExcludeSystemObjects = $true
+            }
+
+            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } }
+
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
-            $objects += $server.Databases[$Database].Views | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "View" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
+
+            $params = @{
+                SqlInstance          = $SqlInstance
+                SqlCredential        = $SqlCredential
+                Database             = $Database
+                Type                 = "View"
+                ExcludeSystemObjects = $true
+            }
+
+            $objects += Get-DbaDbModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } }
         }
 
         if ($Object) {
@@ -227,6 +265,8 @@ function New-PSTGObjectExistenceTest {
                         Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
                     }
                 }
+
+                $objectStep++
             }
         }
     }
