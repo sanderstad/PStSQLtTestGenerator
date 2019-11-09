@@ -150,10 +150,10 @@ function New-PSTGProcedureParameterTest {
         $objects = @()
 
         if ($InputObject) {
-            $objects += $server.Databases[$Database].StoredProcedures | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Parameters
+            $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Where-Object Name -in $InputObject | Select-Object SchemaName, Name
         }
         else {
-            $objects += $server.Databases[$Database].StoredProcedures | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Parameters
+            $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
         }
 
         if ($Procedure) {
@@ -165,10 +165,13 @@ function New-PSTGProcedureParameterTest {
 
         if ($objectCount -ge 1) {
             foreach ($input in $objects) {
+
+                $procedureObject = $server.Databases[$Database].StoredProcedures | Where-Object { $_.Schema -eq $input.SchemaName -and $_.Name -eq $input.Name }
+
                 $task = "Creating procedure $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If stored procedure $($input.Schema).$($input.Name) has the correct parameters"
+                $testName = "test If stored procedure $($procedureObject.Schema).$($procedureObject.Name) has the correct parameters"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -180,7 +183,7 @@ function New-PSTGProcedureParameterTest {
                 $creator = $env:username
 
                 # Get the parameters
-                $parameters = $input.Parameters
+                $parameters = $procedureObject.Parameters
 
                 if ($parameters.Count -ge 1) {
                     # Import the template
@@ -195,7 +198,21 @@ function New-PSTGProcedureParameterTest {
 
                     # Loop through the parameters
                     foreach ($parameter in $parameters) {
-                        $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        if ($parameter.DataType.SqlDataType -eq 'UserDefinedDataType') {
+                            $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$parameter.DataType.Name].SystemType
+                        }
+                        else {
+                            $columnDataType = $parameter.DataType.Name
+                        }
+
+                        if ($columnDataType -in 'nchar', 'nvarchar') {
+                            $columnMaxLength = $column.DataType.MaximumLength * 2
+                        }
+                        else {
+                            $columnMaxLength = $column.DataType.MaximumLength
+                        }
+
+                        $paramText = "`t('$($parameter.Name)', '$($columnDataType)', $($columnMaxLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
                         $paramTextCollection += $paramText
                     }
 
@@ -209,9 +226,9 @@ function New-PSTGProcedureParameterTest {
                     $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
 
                     # Write the test
-                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Procedure Parameter Test")) {
+                    if ($PSCmdlet.ShouldProcess("$($procedureObject.Schema).$($procedureObject.Name)", "Writing Procedure Parameter Test")) {
                         try {
-                            Write-PSFMessage -Message "Creating procedure parameter test for procedure '$($input.Schema).$($input.Name)'"
+                            Write-PSFMessage -Message "Creating procedure parameter test for procedure '$($procedureObject.Schema).$($procedureObject.Name)'"
                             $script | Out-File -FilePath $fileName
 
                             [PSCustomObject]@{
@@ -227,8 +244,10 @@ function New-PSTGProcedureParameterTest {
                     }
                 }
                 else {
-                    Write-PSFMessage -Message "Procedure $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
+                    Write-PSFMessage -Message "Procedure $($procedureObject.Schema).$($procedureObject.Name) does not have any parameters. Skipping..."
                 }
+
+                $objectStep++
             }
         }
     }

@@ -226,6 +226,8 @@ function New-PSTGTableIndexTest {
                         }
                     }
                 }
+
+                $objectStep++
             }
         }
     }

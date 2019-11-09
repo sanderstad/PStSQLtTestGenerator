@@ -70,8 +70,8 @@ ___PARAMETERS___
             ON pm.system_type_id = t.system_type_id
             AND pm.user_type_id = t.user_type_id
     WHERE s.name = '___SCHEMA___'
-          AND ps.name = '___NAME___'
-          AND pm.NAME <> '';
+          AND o.name = '___NAME___'
+          AND pm.name <> '';
 
     ----- ASSERT -------------------------------------------------
 

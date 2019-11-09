@@ -37,14 +37,17 @@ ___COLUMNS___
     (
         ColumnName
     )
-    SELECT ind.name AS IndexName
+    SELECT col.name
     FROM sys.indexes ind
         INNER JOIN sys.index_columns ic
             ON ind.object_id = ic.object_id
             AND ind.index_id = ic.index_id
+        INNER JOIN sys.columns col
+            ON ic.object_id = col.object_id
+            AND ic.column_id = col.column_id
         INNER JOIN sys.tables t
             ON ind.object_id = t.object_id
-    WHERE t.name = 'Schedule';
+    WHERE ind.name = '___NAME___';
 
     ----- ASSERT -------------------------------------------------
 

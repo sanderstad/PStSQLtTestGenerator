@@ -37,7 +37,7 @@ ___INDEXES___
     (
         IndexName
     )
-    SELECT ind.name AS IndexName
+    SELECT ind.name
     FROM sys.indexes ind
         INNER JOIN sys.tables t
             ON ind.object_id = t.object_id
