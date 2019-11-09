@@ -226,6 +226,8 @@ function New-PSTGViewColumnTest {
                         Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
                     }
                 }
+
+                $objectStep++
             }
         }
     }
