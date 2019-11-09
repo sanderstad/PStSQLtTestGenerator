@@ -164,11 +164,11 @@ function New-PSTGTableColumnTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($tableObject in $objects) {
                 $task = "Creating table $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If table $($input.Schema).$($input.Name) has the correct columns"
+                $testName = "test If table $($tableObject.Schema).$($tableObject.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -188,45 +188,60 @@ function New-PSTGTableColumnTest {
                 }
 
                 # Get the columns
-                $columns = $input.Columns
+                $columns = $tableObject.Columns
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
-                    $columnTextCollection += $columnText
-                }
-
-                # Replace the markers with the content
-                $script = $script.Replace("___TESTCLASS___", $TestClass)
-                $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
-                $script = $script.Replace("___CREATOR___", $creator)
-                $script = $script.Replace("___DATE___", $date)
-                $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
-
-                # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Column Test")) {
-                    try {
-                        Write-PSFMessage -Message "Creating table column test for table '$($input.Schema).$($input.Name)'"
-                        $script | Out-File -FilePath $fileName
-
-                        [PSCustomObject]@{
-                            TestName = $testName
-                            Category = "TableColumn"
-                            Creator  = $creator
-                            FileName = $fileName
-                        }
+                    if ($column.DataType.SqlDataType -eq 'UserDefinedDataType') {
+                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name]
                     }
-                    catch {
-                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                    else {
+                        $columnDataType = $column.DataType.Name
+                    }
+
+                    if ($columnDataType -in 'nchar', 'nvarchar') {
+                        $columnMaxLength = $column.DataType.MaximumLength * 2
+                    }
+                    else {
+                        $columnMaxLength = $column.DataType.MaximumLength
                     }
                 }
 
-                $objectStep++
+                $columnText = "`t('$($column.Name)', '$($columnDataType)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                $columnTextCollection += $columnText
             }
+
+            # Replace the markers with the content
+            $script = $script.Replace("___TESTCLASS___", $TestClass)
+            $script = $script.Replace("___TESTNAME___", $testName)
+            $script = $script.Replace("___SCHEMA___", $tableObject.Schema)
+            $script = $script.Replace("___NAME___", $tableObject.Name)
+            $script = $script.Replace("___CREATOR___", $creator)
+            $script = $script.Replace("___DATE___", $date)
+            $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+
+            # Write the test
+            if ($PSCmdlet.ShouldProcess("$($tableObject.Schema).$($tableObject.Name)", "Writing Table Column Test")) {
+                try {
+                    Write-PSFMessage -Message "Creating table column test for table '$($tableObject.Schema).$($tableObject.Name)'"
+                    $script | Out-File -FilePath $fileName
+
+                    [PSCustomObject]@{
+                        TestName = $testName
+                        Category = "TableColumn"
+                        Creator  = $creator
+                        FileName = $fileName
+                    }
+                }
+                catch {
+                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
+                }
+            }
+
+            $objectStep++
         }
     }
+}
 }
