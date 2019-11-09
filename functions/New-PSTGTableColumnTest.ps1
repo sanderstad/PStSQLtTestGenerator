@@ -209,7 +209,7 @@ function New-PSTGTableColumnTest {
                     }
 
 
-                    $columnText = "`t('$($column.Name)', '$($columnDataType)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
                     $columnTextCollection += $columnText
                 }
 
