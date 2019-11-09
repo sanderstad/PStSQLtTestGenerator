@@ -198,7 +198,21 @@ function New-PSTGProcedureParameterTest {
 
                     # Loop through the parameters
                     foreach ($parameter in $parameters) {
-                        $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        if ($parameter.DataType.SqlDataType -eq 'UserDefinedDataType') {
+                            $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$parameter.DataType.Name].SystemType
+                        }
+                        else {
+                            $columnDataType = $parameter.DataType.Name
+                        }
+
+                        if ($columnDataType -in 'nchar', 'nvarchar') {
+                            $columnMaxLength = $column.DataType.MaximumLength * 2
+                        }
+                        else {
+                            $columnMaxLength = $column.DataType.MaximumLength
+                        }
+
+                        $paramText = "`t('$($parameter.Name)', '$($columnDataType)', $($columnMaxLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
                         $paramTextCollection += $paramText
                     }
 
