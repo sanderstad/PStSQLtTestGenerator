@@ -207,41 +207,41 @@ function New-PSTGTableColumnTest {
                     else {
                         $columnMaxLength = $column.DataType.MaximumLength
                     }
+
+
+                    $columnText = "`t('$($column.Name)', '$($columnDataType)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                    $columnTextCollection += $columnText
                 }
 
-                $columnText = "`t('$($column.Name)', '$($columnDataType)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
-                $columnTextCollection += $columnText
-            }
+                # Replace the markers with the content
+                $script = $script.Replace("___TESTCLASS___", $TestClass)
+                $script = $script.Replace("___TESTNAME___", $testName)
+                $script = $script.Replace("___SCHEMA___", $tableObject.Schema)
+                $script = $script.Replace("___NAME___", $tableObject.Name)
+                $script = $script.Replace("___CREATOR___", $creator)
+                $script = $script.Replace("___DATE___", $date)
+                $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
-            # Replace the markers with the content
-            $script = $script.Replace("___TESTCLASS___", $TestClass)
-            $script = $script.Replace("___TESTNAME___", $testName)
-            $script = $script.Replace("___SCHEMA___", $tableObject.Schema)
-            $script = $script.Replace("___NAME___", $tableObject.Name)
-            $script = $script.Replace("___CREATOR___", $creator)
-            $script = $script.Replace("___DATE___", $date)
-            $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
+                # Write the test
+                if ($PSCmdlet.ShouldProcess("$($tableObject.Schema).$($tableObject.Name)", "Writing Table Column Test")) {
+                    try {
+                        Write-PSFMessage -Message "Creating table column test for table '$($tableObject.Schema).$($tableObject.Name)'"
+                        $script | Out-File -FilePath $fileName
 
-            # Write the test
-            if ($PSCmdlet.ShouldProcess("$($tableObject.Schema).$($tableObject.Name)", "Writing Table Column Test")) {
-                try {
-                    Write-PSFMessage -Message "Creating table column test for table '$($tableObject.Schema).$($tableObject.Name)'"
-                    $script | Out-File -FilePath $fileName
-
-                    [PSCustomObject]@{
-                        TestName = $testName
-                        Category = "TableColumn"
-                        Creator  = $creator
-                        FileName = $fileName
+                        [PSCustomObject]@{
+                            TestName = $testName
+                            Category = "TableColumn"
+                            Creator  = $creator
+                            FileName = $fileName
+                        }
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
                     }
                 }
-                catch {
-                    Stop-PSFFunction -Message "Something went wrong writing the test" -Target $testName -ErrorRecord $_
-                }
-            }
 
-            $objectStep++
+                $objectStep++
+            }
         }
     }
-}
 }
