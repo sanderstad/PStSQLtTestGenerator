@@ -44,7 +44,7 @@ ___COLUMNS___
             AND ind.index_id = ic.index_id
         INNER JOIN sys.tables t
             ON ind.object_id = t.object_id
-    WHERE t.name = 'Schedule';
+    WHERE t.name = '___NAME___';
 
     ----- ASSERT -------------------------------------------------
 
