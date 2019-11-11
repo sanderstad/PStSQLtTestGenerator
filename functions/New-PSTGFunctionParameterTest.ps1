@@ -199,7 +199,8 @@ function New-PSTGFunctionParameterTest {
                         AND pm.name <> '';"
 
                 try {
-                    $parameters = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                    $parameters = @()
+                    $parameters += Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
                 }
                 catch {
                     Stop-PSFFunction -Message "Could not retrieve parameters for [$($functionObject.Schema)].[$($functionObject.Name)]" -Target $functionObject -Continue

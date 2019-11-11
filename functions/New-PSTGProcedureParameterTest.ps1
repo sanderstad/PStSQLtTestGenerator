@@ -200,7 +200,8 @@ function New-PSTGProcedureParameterTest {
                     AND ps.name = '$($procedureObject.Name)';"
 
                 try {
-                    $parameters = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                    $parameters = @()
+                    $parameters += Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
                 }
                 catch {
                     Stop-PSFFunction -Message "Could not retrieve parameters for [$($procedureObject.Schema)].[$($procedureObject.Name)]" -Target $procedureObject -Continue
