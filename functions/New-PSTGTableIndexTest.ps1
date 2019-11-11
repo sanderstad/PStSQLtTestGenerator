@@ -164,12 +164,12 @@ function New-PSTGTableIndexTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
-                if ($input.Indexes.Count -ge 1) {
+            foreach ($tableObject in $objects) {
+                if ($tableObject.Indexes.Count -ge 1) {
                     $task = "Creating index $($objectStep) of $($objectCount)"
                     Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                    $testName = "test If table $($input.Schema).$($input.Name) has the correct indexes"
+                    $testName = "test If table $($tableObject.Schema).$($tableObject.Name) has the correct indexes"
 
                     # Test if the name of the test does not become too long
                     if ($testName.Length -gt 128) {
@@ -189,7 +189,21 @@ function New-PSTGTableIndexTest {
                     }
 
                     # Get the columns
-                    $indexes = $input.Indexes
+                    $query = "SELECT ind.name AS Name
+                        FROM sys.indexes ind
+                            INNER JOIN sys.tables t
+                                ON ind.object_id = t.object_id
+                            INNER JOIN sys.schemas AS s
+                                ON s.schema_id = t.schema_id
+                        WHERE s.name = '$($tableObject.Schema)'
+                            AND t.name = '$($tableObject.Name)';"
+
+                    try {
+                        $indexes = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                    }
+                    catch {
+                        Stop-PSFFunction -Message "Could not retrieve indexes for [$($tableObject.Schema)].[$($tableObject.Name)]" -Target $tableObject -Continue
+                    }
 
                     $indexTextCollection = @()
 
@@ -202,16 +216,16 @@ function New-PSTGTableIndexTest {
                     # Replace the markers with the content
                     $script = $script.Replace("___TESTCLASS___", $TestClass)
                     $script = $script.Replace("___TESTNAME___", $testName)
-                    $script = $script.Replace("___SCHEMA___", $input.Schema)
-                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___SCHEMA___", $tableObject.Schema)
+                    $script = $script.Replace("___NAME___", $tableObject.Name)
                     $script = $script.Replace("___CREATOR___", $creator)
                     $script = $script.Replace("___DATE___", $date)
                     $script = $script.Replace("___INDEXES___", ($indexTextCollection -join ",`n") + ";")
 
                     # Write the test
-                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Table Index Test")) {
+                    if ($PSCmdlet.ShouldProcess("$($tableObject.Schema).$($tableObject.Name)", "Writing Table Index Test")) {
                         try {
-                            Write-PSFMessage -Message "Creating table index test for table '$($input.Schema).$($input.Name)'"
+                            Write-PSFMessage -Message "Creating table index test for table '$($tableObject.Schema).$($tableObject.Name)'"
                             $script | Out-File -FilePath $fileName
 
                             [PSCustomObject]@{

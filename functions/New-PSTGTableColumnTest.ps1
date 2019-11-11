@@ -188,28 +188,36 @@ function New-PSTGTableColumnTest {
                 }
 
                 # Get the columns
-                $columns = $tableObject.Columns
+                $query = "SELECT c.name AS ColumnName,
+                            st.name AS DataType,
+                            c.max_length AS MaxLength,
+                            c.precision AS [Precision],
+                            c.scale AS Scale
+                    FROM sys.columns AS c
+                        INNER JOIN sys.tables AS t
+                            ON t.object_id = c.object_id
+                        INNER JOIN sys.schemas AS s
+                            ON s.schema_id = t.schema_id
+                        LEFT JOIN sys.types AS st
+                            ON st.user_type_id = c.user_type_id
+                    WHERE t.type = 'U'
+                        AND s.name = '$($tableObject.Schema)'
+                        AND t.name = '$($tableObject.Name)'
+                    ORDER BY t.name,
+                            c.name;"
+
+                try {
+                    $columns = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                }
+                catch {
+                    Stop-PSFFunction -Message "Could not retrieve columns for [$($tableObject.Schema)].[$($tableObject.Name)]" -Target $tableObject -Continue
+                }
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    if ($column.DataType.SqlDataType -eq 'UserDefinedDataType') {
-                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name].SystemType
-                    }
-                    else {
-                        $columnDataType = $column.DataType.Name
-                    }
-
-                    if ($columnDataType -in 'nchar', 'nvarchar') {
-                        $columnMaxLength = $column.DataType.MaximumLength * 2
-                    }
-                    else {
-                        $columnMaxLength = $column.DataType.MaximumLength
-                    }
-
-
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                    $columnText = "`t('$($column.ColumnName)', '$($column.DataType)', $($column.MaxLength), $($column.Precision), $($column.Scale))"
                     $columnTextCollection += $columnText
                 }
 

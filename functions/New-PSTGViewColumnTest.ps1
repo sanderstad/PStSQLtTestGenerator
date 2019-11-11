@@ -166,11 +166,11 @@ function New-PSTGViewColumnTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($object in $objects) {
+            foreach ($viewObject in $objects) {
                 $task = "Creating view $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If view $($object.Schema).$($object.Name) has the correct columns"
+                $testName = "test If view $($viewObject.Schema).$($viewObject.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -190,44 +190,52 @@ function New-PSTGViewColumnTest {
                 }
 
                 # Get the columns
-                $columns = $object.Columns
+                $query = "SELECT c.name AS ColumnName,
+                        st.name AS DataType,
+                        c.max_length AS MaxLength,
+                        c.precision AS [Precision],
+                        c.scale AS Scale
+                    FROM sys.columns AS c
+                        INNER JOIN sys.views AS v
+                            ON v.object_id = c.object_id
+                        INNER JOIN sys.schemas AS s
+                            ON s.schema_id = v.schema_id
+                        LEFT JOIN sys.types AS st
+                            ON st.user_type_id = c.user_type_id
+                    WHERE v.type = 'V'
+                        AND s.name = '$($viewObject.Schema)'
+                        AND v.name = '$($viewObject.Name)'
+                    ORDER BY v.name,
+                            c.name;"
+
+                try {
+                    $columns = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                }
+                catch {
+                    Stop-PSFFunction -Message "Could not retrieve columns for [$($viewObject.Schema)].[$($viewObject.Name)]" -Target $viewObject -Continue
+                }
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-
-                    if ($column.DataType.SqlDataType -eq 'UserDefinedDataType') {
-                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name].SystemType
-                    }
-                    else {
-                        $columnDataType = $column.DataType.Name
-                    }
-
-                    if ($columnDataType -in 'nchar', 'nvarchar') {
-                        $columnMaxLength = $column.DataType.MaximumLength * 2
-                    }
-                    else {
-                        $columnMaxLength = $column.DataType.MaximumLength
-                    }
-
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+                    $columnText = "`t('$($column.ColumnName)', '$($column.DataType)', $($column.MaxLength), $($column.Precision), $($column.Scale))"
                     $columnTextCollection += $columnText
                 }
 
                 # Replace the markers with the content
                 $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___SCHEMA___", $object.Schema)
-                $script = $script.Replace("___NAME___", $object.Name)
+                $script = $script.Replace("___SCHEMA___", $viewObject.Schema)
+                $script = $script.Replace("___NAME___", $viewObject.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
                 $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($object.Schema).$($object.Name)", "Writing View Column Test")) {
+                if ($PSCmdlet.ShouldProcess("$($viewObject.Schema).$($viewObject.Name)", "Writing View Column Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating view column test for table '$($object.Schema).$($object.Name)'"
+                        Write-PSFMessage -Message "Creating view column test for table '$($viewObject.Schema).$($viewObject.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{

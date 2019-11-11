@@ -164,9 +164,9 @@ function New-PSTGProcedureParameterTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($procedureObject in $objects) {
 
-                $procedureObject = $server.Databases[$Database].StoredProcedures | Where-Object { $_.Schema -eq $input.SchemaName -and $_.Name -eq $input.Name }
+                $procedureObject = $server.Databases[$Database].StoredProcedures | Where-Object { $_.Schema -eq $procedureObject.SchemaName -and $_.Name -eq $procedureObject.Name }
 
                 $task = "Creating procedure $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
@@ -183,7 +183,28 @@ function New-PSTGProcedureParameterTest {
                 $creator = $env:username
 
                 # Get the parameters
-                $parameters = $procedureObject.Parameters
+                $query = "SELECT pm.name AS ParameterName,
+                        t.name AS DataType,
+                        pm.max_length AS MaxLength,
+                        pm.precision AS [Precision],
+                        pm.scale AS Scale
+                FROM sys.parameters AS pm
+                    INNER JOIN sys.procedures AS ps
+                        ON pm.object_id = ps.object_id
+                    INNER JOIN sys.schemas AS s
+                        ON s.schema_id = ps.schema_id
+                    INNER JOIN sys.types AS t
+                        ON pm.system_type_id = t.system_type_id
+                            AND pm.user_type_id = t.user_type_id
+                WHERE s.name = '$($procedureObject.Schema)'
+                    AND ps.name = '$($procedureObject.Name)';"
+
+                try {
+                    $parameters = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                }
+                catch {
+                    Stop-PSFFunction -Message "Could not retrieve parameters for [$($procedureObject.Schema)].[$($procedureObject.Name)]" -Target $procedureObject -Continue
+                }
 
                 if ($parameters.Count -ge 1) {
                     # Import the template
@@ -198,29 +219,15 @@ function New-PSTGProcedureParameterTest {
 
                     # Loop through the parameters
                     foreach ($parameter in $parameters) {
-                        if ($parameter.DataType.SqlDataType -eq 'UserDefinedDataType') {
-                            $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$parameter.DataType.Name].SystemType
-                        }
-                        else {
-                            $columnDataType = $parameter.DataType.Name
-                        }
-
-                        if ($columnDataType -in 'nchar', 'nvarchar') {
-                            $columnMaxLength = $column.DataType.MaximumLength * 2
-                        }
-                        else {
-                            $columnMaxLength = $column.DataType.MaximumLength
-                        }
-
-                        $paramText = "`t('$($parameter.Name)', '$($columnDataType)', $($columnMaxLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        $paramText = "`t('$($parameter.ParameterName)', '$($parameter.DataType)', $($parameter.MaxLength), $($parameter.Precision), $($parameter.Scale))"
                         $paramTextCollection += $paramText
                     }
 
                     # Replace the markers with the content
                     $script = $script.Replace("___TESTCLASS___", $TestClass)
                     $script = $script.Replace("___TESTNAME___", $testName)
-                    $script = $script.Replace("___SCHEMA___", $input.Schema)
-                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___SCHEMA___", $procedureObject.Schema)
+                    $script = $script.Replace("___NAME___", $procedureObject.Name)
                     $script = $script.Replace("___CREATOR___", $creator)
                     $script = $script.Replace("___DATE___", $date)
                     $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
