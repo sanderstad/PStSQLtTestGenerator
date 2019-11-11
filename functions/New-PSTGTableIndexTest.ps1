@@ -196,7 +196,8 @@ function New-PSTGTableIndexTest {
                             INNER JOIN sys.schemas AS s
                                 ON s.schema_id = t.schema_id
                         WHERE s.name = '$($tableObject.Schema)'
-                            AND t.name = '$($tableObject.Name)';"
+                            AND t.name = '$($tableObject.Name)'
+                            AND ind.Name IS NOT NULL;"
 
                     try {
                         $indexes = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
