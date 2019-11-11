@@ -19,7 +19,7 @@ BEGIN
     (
         [ParameterName] NVARCHAR(128) NOT NULL,
         [DataType] sysname NOT NULL,
-        [LengthSize] SMALLINT NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
         [Precision] TINYINT NOT NULL,
         [Scale] TINYINT NOT NULL
     );
@@ -28,7 +28,7 @@ BEGIN
     (
         [ParameterName] NVARCHAR(128) NOT NULL,
         [DataType] sysname NOT NULL,
-        [LengthSize] SMALLINT NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
         [Precision] TINYINT NOT NULL,
         [Scale] TINYINT NOT NULL
     );
@@ -37,7 +37,7 @@ BEGIN
     (
         ParameterName,
         DataType,
-        LengthSize,
+        MaxLength,
         Precision,
         Scale
     )
@@ -50,13 +50,13 @@ ___PARAMETERS___
     (
         ParameterName,
         DataType,
-        LengthSize,
+        MaxLength,
         Precision,
         Scale
     )
     SELECT pm.name AS ParameterName,
            t.name AS DataType,
-           pm.max_length AS LengthSize,
+           pm.max_length AS MaxLength,
            pm.precision AS [Precision],
 		   pm.scale AS Scale
     FROM sys.parameters AS pm
