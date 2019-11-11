@@ -178,11 +178,11 @@ function New-PSTGIndexColumnTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($indexObject in $objects) {
                 $task = "Creating index $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If index $($input.Name) has the correct columns"
+                $testName = "test If index $($indexObject.Name) has the correct columns"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -202,28 +202,51 @@ function New-PSTGIndexColumnTest {
                 }
 
                 # Get the columns
-                $columns = $input.IndexedColumns
+                $query = "SELECT col.name AS ColumnName,
+                        st.name AS DataType,
+                        col.max_length AS MaxLength,
+                        col.precision AS [Precision],
+                        col.scale AS Scale
+                    FROM sys.indexes AS ind
+                        INNER JOIN sys.index_columns AS ic
+                            ON ind.object_id = ic.object_id
+                            AND ind.index_id = ic.index_id
+                        INNER JOIN sys.columns AS col
+                            ON ic.object_id = col.object_id
+                            AND ic.column_id = col.column_id
+                        INNER JOIN sys.tables AS t
+                            ON ind.object_id = t.object_id
+                        LEFT JOIN sys.types AS st
+                            ON st.user_type_id = col.user_type_id
+                    WHERE ind.name = '$($indexObject.Name)';"
+
+                try {
+                    $columns = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                }
+                catch {
+                    Stop-PSFFunction -Message "Could not retrieve columns for [$($indexObject.Schema)].[$($indexObject.Name)]" -Target $indexObject -Continue
+                }
 
                 $columnTextCollection = @()
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)')"
+                    $columnText = "`t('$($column.ColumnName)', '$($column.DataType)', $($column.MaxLength), $($column.Precision), $($column.Scale))"
                     $columnTextCollection += $columnText
                 }
 
                 # Replace the markers with the content
                 $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
-                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___NAME___", $indexObject.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
                 $script = $script.Replace("___COLUMNS___", ($columnTextCollection -join ",`n") + ";")
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Index Column Test")) {
+                if ($PSCmdlet.ShouldProcess("$($indexObject.Schema).$($indexObject.Name)", "Writing Index Column Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating index column test for index '$($input.Name)'"
+                        Write-PSFMessage -Message "Creating index column test for index '$($indexObject.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{

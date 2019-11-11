@@ -18,7 +18,7 @@ BEGIN
     (
         [ColumnName] sysname NOT NULL,
         [DataType] sysname NOT NULL,
-        [LengthSize] SMALLINT NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
         [Precision] TINYINT NOT NULL,
         [Scale] TINYINT NOT NULL
     );
@@ -27,7 +27,7 @@ BEGIN
     (
         [ColumnName] sysname NOT NULL,
         [DataType] sysname NOT NULL,
-        [LengthSize] SMALLINT NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
         [Precision] TINYINT NOT NULL,
         [Scale] TINYINT NOT NULL
     );
@@ -36,7 +36,7 @@ BEGIN
     (
         ColumnName,
         DataType,
-        LengthSize,
+        MaxLength,
         Precision,
         Scale
     )
@@ -49,13 +49,13 @@ ___COLUMNS___
     (
         ColumnName,
         DataType,
-        LengthSize,
+        MaxLength,
         Precision,
         Scale
     )
     SELECT c.name AS ColumnName,
        st.name AS DataType,
-       c.max_length AS LengthSize,
+       c.max_length AS MaxLength,
        c.precision AS [Precision],
        c.scale AS Scale
     FROM sys.columns AS c

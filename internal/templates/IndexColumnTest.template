@@ -16,17 +16,29 @@ BEGIN
     -- Create the tables
     CREATE TABLE #actual
     (
-        [ColumnName] sysname NOT NULL
+        [ColumnName] sysname NOT NULL,
+        [DataType] sysname NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
     );
 
     CREATE TABLE #expected
     (
-        [ColumnName] sysname NOT NULL
+        [ColumnName] sysname NOT NULL,
+        [DataType] sysname NOT NULL,
+        [MaxLength] SMALLINT NOT NULL,
+        [Precision] TINYINT NOT NULL,
+        [Scale] TINYINT NOT NULL
     );
 
     INSERT INTO #expected
     (
-        ColumnName
+        ColumnName,
+        DataType,
+        MaxLength,
+        Precision,
+        Scale
     )
     VALUES
 ___COLUMNS___
@@ -35,18 +47,28 @@ ___COLUMNS___
 
     INSERT INTO #actual
     (
-        ColumnName
+        ColumnName,
+        DataType,
+        MaxLength,
+        Precision,
+        Scale
     )
-    SELECT col.name
-    FROM sys.indexes ind
-        INNER JOIN sys.index_columns ic
+    SELECT col.name,
+       st.name AS DataType,
+       col.max_length AS MaxLength,
+       col.precision AS [Precision],
+       col.scale AS Scale
+    FROM sys.indexes AS ind
+        INNER JOIN sys.index_columns AS ic
             ON ind.object_id = ic.object_id
             AND ind.index_id = ic.index_id
-        INNER JOIN sys.columns col
+        INNER JOIN sys.columns AS col
             ON ic.object_id = col.object_id
             AND ic.column_id = col.column_id
-        INNER JOIN sys.tables t
+        INNER JOIN sys.tables AS t
             ON ind.object_id = t.object_id
+        LEFT JOIN sys.types AS st
+            ON st.user_type_id = col.user_type_id
     WHERE ind.name = '___NAME___';
 
     ----- ASSERT -------------------------------------------------

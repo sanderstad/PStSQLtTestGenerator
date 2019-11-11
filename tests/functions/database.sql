@@ -1,6 +1,6 @@
 CREATE FUNCTION [dbo].[DisplayPersons]
 (
-    @PersonNumber INTEGER
+    @PersonNumber INT
 )
 RETURNS VARCHAR(20)
 AS

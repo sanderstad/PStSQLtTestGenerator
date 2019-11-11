@@ -44,7 +44,8 @@ ___INDEXES___
         INNER JOIN sys.schemas AS s
             ON s.schema_id = t.schema_id
     WHERE s.name = '___SCHEMA___'
-        AND t.name = '___NAME___';
+        AND t.name = '___NAME___'
+        AND ind.Name IS NOT NULL;
 
     ----- ASSERT -------------------------------------------------
 

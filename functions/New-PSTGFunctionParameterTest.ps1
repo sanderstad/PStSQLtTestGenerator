@@ -165,11 +165,11 @@ function New-PSTGFunctionParameterTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($functionObject in $objects) {
                 $task = "Creating function test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                $testName = "test If function $($input.Schema).$($input.Name) has the correct parameters"
+                $testName = "test If function $($functionObject.Schema).$($functionObject.Name) has the correct parameters"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -179,7 +179,32 @@ function New-PSTGFunctionParameterTest {
                 $fileName = Join-Path -Path $OutputPath -ChildPath "$($testName).sql"
 
                 # Get the parameters
-                $parameters = $input.Parameters
+                $query = "SELECT pm.name AS ParameterName,
+                        t.name AS DataType,
+                        pm.max_length AS MaxLength,
+                        pm.precision AS [Precision],
+                        pm.scale AS Scale
+                    FROM sys.parameters AS pm
+                        INNER JOIN sys.sql_modules AS sm
+                            ON sm.object_id = pm.object_id
+                        INNER JOIN sys.objects AS o
+                            ON sm.object_id = o.object_id
+                        INNER JOIN sys.schemas AS s
+                            ON s.schema_id = o.schema_id
+                        INNER JOIN sys.types AS t
+                            ON pm.system_type_id = t.system_type_id
+                            AND pm.user_type_id = t.user_type_id
+                    WHERE s.name = '$($functionObject.Schema)'
+                        AND o.name = '$($functionObject.Name)'
+                        AND pm.name <> '';"
+
+                try {
+                    $parameters = @()
+                    $parameters += Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                }
+                catch {
+                    Stop-PSFFunction -Message "Could not retrieve parameters for [$($functionObject.Schema)].[$($functionObject.Name)]" -Target $functionObject -Continue
+                }
 
                 if ($parameters.Count -ge 1) {
                     # Import the template
@@ -194,23 +219,23 @@ function New-PSTGFunctionParameterTest {
 
                     # Loop through the parameters
                     foreach ($parameter in $parameters) {
-                        $paramText = "`t('$($parameter.Name)', '$($parameter.DataType.Name)', $($parameter.DataType.MaximumLength), $($parameter.DataType.NumericPrecision), $($parameter.DataType.NumericScale))"
+                        $paramText = "`t('$($parameter.ParameterName)', '$($parameter.DataType)', $($parameter.MaxLength), $($parameter.Precision), $($parameter.Scale))"
                         $paramTextCollection += $paramText
                     }
 
                     # Replace the markers with the content
                     $script = $script.Replace("___TESTCLASS___", $TestClass)
                     $script = $script.Replace("___TESTNAME___", $testName)
-                    $script = $script.Replace("___SCHEMA___", $input.Schema)
-                    $script = $script.Replace("___NAME___", $input.Name)
+                    $script = $script.Replace("___SCHEMA___", $functionObject.Schema)
+                    $script = $script.Replace("___NAME___", $functionObject.Name)
                     $script = $script.Replace("___CREATOR___", $creator)
                     $script = $script.Replace("___DATE___", $date)
                     $script = $script.Replace("___PARAMETERS___", ($paramTextCollection -join ",`n") + ";")
 
                     # Write the test
-                    if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Function Parameter Test")) {
+                    if ($PSCmdlet.ShouldProcess("$($functionObject.Schema).$($functionObject.Name)", "Writing Function Parameter Test")) {
                         try {
-                            Write-PSFMessage -Message "Creating function parameter test for function '$($input.Schema).$($input.Name)'"
+                            Write-PSFMessage -Message "Creating function parameter test for function '$($functionObject.Schema).$($functionObject.Name)'"
                             $script | Out-File -FilePath $fileName
 
                             [PSCustomObject]@{
@@ -226,7 +251,7 @@ function New-PSTGFunctionParameterTest {
                     }
                 }
                 else {
-                    Write-PSFMessage -Message "Function $($input.Schema).$($input.Name) does not have any parameters. Skipping..."
+                    Write-PSFMessage -Message "Function $($functionObject.Schema).$($functionObject.Name) does not have any parameters. Skipping..."
                 }
 
                 $functionStep++
