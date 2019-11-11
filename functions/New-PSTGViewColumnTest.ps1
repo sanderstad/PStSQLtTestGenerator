@@ -196,7 +196,22 @@ function New-PSTGViewColumnTest {
 
                 # Loop through the columns
                 foreach ($column in $columns) {
-                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($column.DataType.MaximumLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
+
+                    if ($column.DataType.SqlDataType -eq 'UserDefinedDataType') {
+                        $columnDataType = $server.Databases[$Database].UserDefinedDataTypes[$column.DataType.Name].SystemType
+                    }
+                    else {
+                        $columnDataType = $column.DataType.Name
+                    }
+
+                    if ($columnDataType -in 'nchar', 'nvarchar') {
+                        $columnMaxLength = $column.DataType.MaximumLength * 2
+                    }
+                    else {
+                        $columnMaxLength = $column.DataType.MaximumLength
+                    }
+
+                    $columnText = "`t('$($column.Name)', '$($column.DataType.Name)', $($columnMaxLength), $($column.DataType.NumericPrecision), $($column.DataType.NumericScale))"
                     $columnTextCollection += $columnText
                 }
 
