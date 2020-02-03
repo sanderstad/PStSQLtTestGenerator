@@ -211,11 +211,11 @@ function New-PSTGObjectExistenceTest {
         $objectStep = 1
 
         if ($objectCount -ge 1) {
-            foreach ($input in $objects) {
+            foreach ($obj in $objects) {
                 $task = "Creating object existence test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
-                switch ($input.ObjectType) {
+                switch ($obj.ObjectType) {
                     "StoredProcedure" {
                         $objectType = "stored procedure"
                     }
@@ -230,7 +230,7 @@ function New-PSTGObjectExistenceTest {
                     }
                 }
 
-                $testName = "test If $($objectType.ToLower()) $($input.Schema)`.$($input.Name) exists"
+                $testName = "test If $($objectType.ToLower()) $($obj.Schema)`.$($obj.Name) exists"
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
@@ -251,15 +251,15 @@ function New-PSTGObjectExistenceTest {
                 $script = $script.Replace("___TESTCLASS___", $TestClass)
                 $script = $script.Replace("___TESTNAME___", $testName)
                 $script = $script.Replace("___OBJECTTYPE___", $objectType.ToLower())
-                $script = $script.Replace("___SCHEMA___", $input.Schema)
-                $script = $script.Replace("___NAME___", $input.Name)
+                $script = $script.Replace("___SCHEMA___", $obj.Schema)
+                $script = $script.Replace("___NAME___", $obj.Name)
                 $script = $script.Replace("___CREATOR___", $creator)
                 $script = $script.Replace("___DATE___", $date)
 
                 # Write the test
-                if ($PSCmdlet.ShouldProcess("$($input.Schema).$($input.Name)", "Writing Object Existence Test")) {
+                if ($PSCmdlet.ShouldProcess("$($obj.Schema).$($obj.Name)", "Writing Object Existence Test")) {
                     try {
-                        Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($input.Schema).$($input.Name)'"
+                        Write-PSFMessage -Message "Creating existence test for $($objectType.ToLower()) '$($obj.Schema).$($obj.Name)'"
                         $script | Out-File -FilePath $fileName
 
                         [PSCustomObject]@{
