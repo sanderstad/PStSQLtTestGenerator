@@ -19,6 +19,9 @@ function New-PSTGTableIndexTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the tables based on schema
+
     .PARAMETER Table
         Table(s) to create tests for
 
@@ -65,13 +68,14 @@ function New-PSTGTableIndexTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string]$Schema,
         [string[]]$Table,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.Table[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -153,11 +157,15 @@ function New-PSTGTableIndexTest {
             $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Indexes
         }
         else {
-            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, Indexes
+            $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false } | Select-Object Schema, Name, Indexes
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
         }
 
         if ($Table) {
-            $objects = $objects | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table }
+            $objects = $objects | Where-Object Name -in $Table
         }
 
         $objectCount = $objects.Count

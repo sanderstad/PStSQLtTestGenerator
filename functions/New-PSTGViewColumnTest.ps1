@@ -19,6 +19,9 @@ function New-PSTGViewColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the views based on schema
+
     .PARAMETER View
         View(s) to create tests forr
 
@@ -67,6 +70,7 @@ function New-PSTGViewColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$View,
         [string]$OutputPath,
         [string]$Creator,
@@ -156,6 +160,10 @@ function New-PSTGViewColumnTest {
         }
         else {
             $objects += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
         }
 
         if ($View) {

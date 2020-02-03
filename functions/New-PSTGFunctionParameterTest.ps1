@@ -19,6 +19,9 @@ function New-PSTGFunctionParameterTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the functions based on schema
+
     .PARAMETER Function
         Function(s) to create tests for
 
@@ -65,13 +68,14 @@ function New-PSTGFunctionParameterTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Function,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.UserDefinedFunction[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -154,6 +158,10 @@ function New-PSTGFunctionParameterTest {
         }
         else {
             $objects += $server.Databases[$Database].UserDefinedFunctions | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Parameters
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
         }
 
         if ($Function) {

@@ -19,6 +19,9 @@ function New-PSTGProcedureParameterTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the stored procedures based on schema
+
     .PARAMETER Procedure
         Procedure(s) to create tests for
 
@@ -65,13 +68,14 @@ function New-PSTGProcedureParameterTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Procedure,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.StoredProcedure[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -154,6 +158,10 @@ function New-PSTGProcedureParameterTest {
         }
         else {
             $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object SchemaName -in $Schema
         }
 
         if ($Procedure) {
