@@ -68,7 +68,7 @@ function New-PSTGTableIndexTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
-        [string]$Schema,
+        [string[]]$Schema,
         [string[]]$Table,
         [string]$OutputPath,
         [string]$Creator,
@@ -174,7 +174,7 @@ function New-PSTGTableIndexTest {
         if ($objectCount -ge 1) {
             foreach ($tableObject in $objects) {
                 if ($tableObject.Indexes.Count -ge 1) {
-                    $task = "Creating index $($objectStep) of $($objectCount)"
+                    $task = "Creating index column test $($objectStep) of $($objectCount)"
                     Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                     $testName = "test If table $($tableObject.Schema).$($tableObject.Name) has the correct indexes"

@@ -175,7 +175,7 @@ function New-PSTGViewColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($viewObject in $objects) {
-                $task = "Creating view $($objectStep) of $($objectCount)"
+                $task = "Creating view test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If view $($viewObject.Schema).$($viewObject.Name) has the correct columns"

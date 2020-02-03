@@ -186,7 +186,7 @@ function New-PSTGIndexColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($indexObject in $objects) {
-                $task = "Creating index $($objectStep) of $($objectCount)"
+                $task = "Creating index column test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If index $($indexObject.Name) has the correct columns"
