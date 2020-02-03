@@ -39,6 +39,9 @@ function Invoke-PSTGTestGenerator {
         The template folder containing all the templates for the tests.
         By default it will use the internal templates directory
 
+    .PARAMETER Schema
+        Filter the functions based on schema
+
     .PARAMETER Function
         Filter out specific functions that should only be processed
 
