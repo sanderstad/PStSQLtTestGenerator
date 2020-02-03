@@ -51,7 +51,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
-    Context "Using Pipeline" {
+    <# Context "Using Pipeline" {
         $procedures = $server.Databases[$($script:database)].StoredProcedures | Where-Object IsSystemObject -eq $false
 
         $result = @()
@@ -70,7 +70,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         It "Result should have correct values" {
             $file.FullName | Should -Be $result[0].FileName
         }
-    }
+    } #>
 
     AfterAll {
         $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false

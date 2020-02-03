@@ -57,7 +57,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
     }
 
-    Context "Using Pipeline" {
+    <# Context "Using Pipeline" {
         $tables = $server.Databases[$($script:database)].Tables
 
         $result = @()
@@ -80,7 +80,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         It "Should have created the right amount of files" {
             $result.Count | Should -Be 2
         }
-    }
+    } #>
 
     AfterAll {
         $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false
