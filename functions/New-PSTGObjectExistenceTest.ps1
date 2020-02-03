@@ -19,6 +19,9 @@ function New-PSTGObjectExistenceTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the objects based on schema
+
     .PARAMETER Object
         The object(s) to create the tests for
 
