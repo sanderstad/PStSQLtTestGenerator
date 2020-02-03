@@ -19,6 +19,9 @@ function New-PSTGProcedureParameterTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the stored procedures based on schema
+
     .PARAMETER Procedure
         Procedure(s) to create tests for
 
@@ -65,13 +68,14 @@ function New-PSTGProcedureParameterTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Procedure,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.StoredProcedure[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -156,6 +160,10 @@ function New-PSTGProcedureParameterTest {
             $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
         }
 
+        if ($Schema) {
+            $objects = $objects | Where-Object SchemaName -in $Schema
+        }
+
         if ($Procedure) {
             $objects = $objects | Where-Object Name -in $Procedure
         }
@@ -168,7 +176,7 @@ function New-PSTGProcedureParameterTest {
 
                 $procedureObject = $server.Databases[$Database].StoredProcedures | Where-Object { $_.Schema -eq $procedureObject.SchemaName -and $_.Name -eq $procedureObject.Name }
 
-                $task = "Creating procedure $($objectStep) of $($objectCount)"
+                $task = "Creating procedure test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If stored procedure $($procedureObject.Schema).$($procedureObject.Name) has the correct parameters"

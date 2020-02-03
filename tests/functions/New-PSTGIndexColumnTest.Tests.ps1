@@ -5,7 +5,7 @@ $CommandName = $MyInvocation.MyCommand.Name.Replace(".Tests.ps1", "")
 Describe "$CommandName Unit Tests" -Tag 'UnitTests' {
     Context "Validate parameters" {
         [object[]]$params = (Get-Command $CommandName).Parameters.Keys | Where-Object { $_ -notin ('whatif', 'confirm') }
-        [object[]]$knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'Table', 'Index', 'OutputPath', 'Creator', 'TemplateFolder', 'TestClass', 'InputObject', 'EnableException'
+        [object[]]$knownParameters = 'SqlInstance', 'SqlCredential', 'Database', 'Schema', 'Table', 'Index', 'OutputPath', 'Creator', 'TemplateFolder', 'TestClass', 'InputObject', 'EnableException'
         $knownParameters += [System.Management.Automation.PSCmdlet]::CommonParameters
         It "Should only contain our specific parameters" {
             (@(Compare-Object -ReferenceObject ($knownParameters | Where-Object { $_ }) -DifferenceObject $params).Count ) | Should Be 0
@@ -53,11 +53,11 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         It "Should have created the right amount of files" {
-            $result.Count | Should -Be 2
+            $result.Count | Should -Be 3
         }
     }
 
-    Context "Using Pipeline" {
+    <# Context "Using Pipeline" {
         $tables = $server.Databases[$($script:database)].Tables
 
         $result = @()
@@ -80,7 +80,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         It "Should have created the right amount of files" {
             $result.Count | Should -Be 2
         }
-    }
+    } #>
 
     AfterAll {
         $null = Remove-DbaDatabase -SqlInstance $script:sqlinstance -Database $script:database -Confirm:$false

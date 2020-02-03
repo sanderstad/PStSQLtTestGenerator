@@ -19,6 +19,9 @@ function New-PSTGTableColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the tables based on schema
+
     .PARAMETER Table
         Table(s) to create tests for
 
@@ -65,13 +68,14 @@ function New-PSTGTableColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Table,
         [string]$OutputPath,
         [string]$Creator,
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.Table[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -153,11 +157,15 @@ function New-PSTGTableColumnTest {
             $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $InputObject } | Select-Object Schema, Name, Columns
         }
         else {
-            $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, Columns
+            $objects += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false } | Select-Object Schema, Name, Columns
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
         }
 
         if ($Table) {
-            $objects = $objects | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table }
+            $objects = $objects | Where-Object Name -in $Table
         }
 
         $objectCount = $objects.Count
@@ -165,7 +173,7 @@ function New-PSTGTableColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($tableObject in $objects) {
-                $task = "Creating table $($objectStep) of $($objectCount)"
+                $task = "Creating table column test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If table $($tableObject.Schema).$($tableObject.Name) has the correct columns"

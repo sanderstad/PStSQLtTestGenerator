@@ -19,6 +19,9 @@ function New-PSTGIndexColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the tables based on schema
+
     .PARAMETER Table
         Table(s) to create tests for
 
@@ -68,6 +71,7 @@ function New-PSTGIndexColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Table,
         [string[]]$Index,
         [string]$OutputPath,
@@ -75,7 +79,7 @@ function New-PSTGIndexColumnTest {
         [string]$TemplateFolder,
         [string]$TestClass,
         [parameter(ParameterSetName = "InputObject", ValueFromPipeline)]
-        [object[]]$InputObject,
+        [Microsoft.SqlServer.Management.Smo.IndexedColumn[]]$InputObject,
         [switch]$EnableException
     )
 
@@ -144,11 +148,15 @@ function New-PSTGIndexColumnTest {
 
         $tables = @()
 
-        if ($Table) {
-            $tables += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Name -in $Table } | Select-Object Schema, Name, Indexes
+        if ($Schema) {
+            $tables += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false -and $_.Schema -in $Schema } | Select-Object Schema, Name, Indexes
         }
         else {
             $tables += $server.Databases[$Database].Tables | Where-Object { $_.IsSystemObject -eq $false } | Select-Object Schema, Name, Indexes
+        }
+
+        if ($Table) {
+            $tables = $tables | Where-Object Name -in $Table
         }
     }
 
@@ -169,7 +177,6 @@ function New-PSTGIndexColumnTest {
             $objects += $tables.Indexes | Select-Object Name, IndexedColumns
         }
 
-
         if ($Index) {
             $objects = $objects | Where-Object Name -in $Index
         }
@@ -179,7 +186,7 @@ function New-PSTGIndexColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($indexObject in $objects) {
-                $task = "Creating index $($objectStep) of $($objectCount)"
+                $task = "Creating index column test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If index $($indexObject.Name) has the correct columns"

@@ -19,6 +19,9 @@ function New-PSTGViewColumnTest {
     .PARAMETER Database
         The database or databases to add.
 
+    .PARAMETER Schema
+        Filter the views based on schema
+
     .PARAMETER View
         View(s) to create tests forr
 
@@ -67,6 +70,7 @@ function New-PSTGViewColumnTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$View,
         [string]$OutputPath,
         [string]$Creator,
@@ -158,6 +162,10 @@ function New-PSTGViewColumnTest {
             $objects += $server.Databases[$Database].Views | Where-Object IsSystemObject -eq $false | Select-Object Schema, Name, Columns
         }
 
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
+        }
+
         if ($View) {
             $objects = $objects | Where-Object Name -in $View
         }
@@ -167,7 +175,7 @@ function New-PSTGViewColumnTest {
 
         if ($objectCount -ge 1) {
             foreach ($viewObject in $objects) {
-                $task = "Creating view $($objectStep) of $($objectCount)"
+                $task = "Creating view test $($objectStep) of $($objectCount)"
                 Write-Progress -ParentId 1 -Activity "Creating..." -Status 'Progress->' -PercentComplete ($objectStep / $objectCount * 100) -CurrentOperation $task -Id 2
 
                 $testName = "test If view $($viewObject.Schema).$($viewObject.Name) has the correct columns"
