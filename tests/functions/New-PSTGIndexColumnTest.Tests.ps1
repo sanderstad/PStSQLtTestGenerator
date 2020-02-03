@@ -53,7 +53,7 @@ Describe "$commandname Integration Tests" -Tags "IntegrationTests" {
         }
 
         It "Should have created the right amount of files" {
-            $result.Count | Should -Be 2
+            $result.Count | Should -Be 3
         }
     }
 
