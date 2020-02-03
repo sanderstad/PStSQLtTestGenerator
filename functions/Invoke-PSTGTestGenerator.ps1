@@ -294,13 +294,6 @@ function Invoke-PSTGTestGenerator {
 
             $dbObjects = @()
 
-            $objectParams = @{
-                SqlInstance          = $server.DomainInstanceName
-                Database             = $Database
-                Type                 = 'StoredProcedure'
-                ExcludeSystemObjects = $true
-            }
-
             $dbObjects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
 
             if ($Schema) {
