@@ -65,6 +65,7 @@ function New-PSTGObjectExistenceTest {
         [DbaInstanceParameter]$SqlInstance,
         [pscredential]$SqlCredential,
         [string]$Database,
+        [string[]]$Schema,
         [string[]]$Object,
         [string]$OutputPath,
         [string]$Creator,
@@ -193,6 +194,10 @@ function New-PSTGObjectExistenceTest {
             }
 
             $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } }
+        }
+
+        if ($Schema) {
+            $objects = $objects | Where-Object Schema -in $Schema
         }
 
         if ($Object) {
