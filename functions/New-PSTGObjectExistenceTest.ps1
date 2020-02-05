@@ -149,8 +149,10 @@ function New-PSTGObjectExistenceTest {
         $objects = @()
 
         if ($InputObject) {
+            # Get tables
             $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } } | Where-Object Name -in $InputObject
 
+            # Get stored procedures
             $params = @{
                 SqlInstance          = $SqlInstance
                 SqlCredential        = $SqlCredential
@@ -161,8 +163,10 @@ function New-PSTGObjectExistenceTest {
 
             $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
 
+            # Get user defined functions
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.Name -in $InputObject -and $_.IsSystemObject -eq $false }
 
+            # Get views
             $params = @{
                 SqlInstance          = $SqlInstance
                 SqlCredential        = $SqlCredential
@@ -170,12 +174,15 @@ function New-PSTGObjectExistenceTest {
                 Type                 = "View"
                 ExcludeSystemObjects = $true
             }
+
             $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } } | Where-Object Name -in $InputObject
 
         }
         else {
+            # Get tables
             $objects += $server.Databases[$Database].Tables | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "Table" } }
 
+            # Get stored procedures
             $params = @{
                 SqlInstance          = $SqlInstance
                 SqlCredential        = $SqlCredential
@@ -186,8 +193,10 @@ function New-PSTGObjectExistenceTest {
 
             $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "StoredProcedure" } }, @{Name = "IsSystemObject"; Expression = { $false } }
 
+            # Get user defined functions
             $objects += $server.Databases[$Database].UserDefinedFunctions | Select-Object Schema, Name, @{Name = "ObjectType"; Expression = { "UserDefinedFunction" } }, IsSystemObject | Where-Object { $_.IsSystemObject -eq $false }
 
+            # Get views
             $params = @{
                 SqlInstance          = $SqlInstance
                 SqlCredential        = $SqlCredential
@@ -197,6 +206,9 @@ function New-PSTGObjectExistenceTest {
             }
 
             $objects += Get-DbaModule @params | Select-Object @{Name = "Schema"; Expression = { $_.SchemaName } }, Name, @{Name = "ObjectType"; Expression = { "View" } }, @{Name = "IsSystemObject"; Expression = { $false } }
+
+            # Get constraints
+            $objects += $server.Databases[$Database].Tables.Checks | Select-Object @{Name = "Schema"; Expression = { $null }, @{Name = "ObjectType"; Expression = { "CheckConstraint" } }, @{Name = "IsSystemObject"; Expression = { $false } } }
         }
 
         if ($Schema) {
@@ -230,7 +242,12 @@ function New-PSTGObjectExistenceTest {
                     }
                 }
 
-                $testName = "test If $($objectType.ToLower()) $($obj.Schema)`.$($obj.Name) exists"
+                if ($null -eq $obj.Schema) {
+                    $testName = "test If $($objectType.ToLower()) $($obj.Name) exists"
+                }
+                else {
+                    $testName = "test If $($objectType.ToLower()) $($obj.Schema)`.$($obj.Name) exists"
+                }
 
                 # Test if the name of the test does not become too long
                 if ($testName.Length -gt 128) {
