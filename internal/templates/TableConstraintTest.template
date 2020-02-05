@@ -1,0 +1,73 @@
+/*
+Description:
+Test if the table has the correct columns
+
+Changes:
+Date		Who						Notes
+----------	---						--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial procedure
+*/
+CREATE PROCEDURE [___TESTCLASS___].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+    -- Create the tables
+    CREATE TABLE #actual
+    (
+        [SchemaName] sysname NOT NULL,
+        [TableName] sysname NOT NULL,
+        [ConstraintName] sysname NOT NULL,
+        [ConstraintType] sysname NOT NULL
+    );
+
+    CREATE TABLE #expected
+    (
+        [SchemaName] sysname NOT NULL,
+        [TableName] sysname NOT NULL,
+        [ConstraintName] sysname NOT NULL,
+        [ConstraintType] sysname NOT NULL
+    );
+
+    INSERT INTO #expected
+    (
+        SchemaName,
+        TableName,
+        ConstraintName,
+        ConstraintType
+    )
+    VALUES
+___COLUMNS___
+
+    ----- ACT ----------------------------------------------------
+
+    INSERT INTO #actual
+    (
+        SchemaName,
+        TableName,
+        ConstraintName,
+        ConstraintType
+    )
+    SELECT
+        s.name AS [SchemaName],
+        t.name AS [TableName],
+        OBJECT_NAME(o.OBJECT_ID) AS [ConstraintName],
+        o.type_desc AS ConstraintType
+    FROM sys.objects as o
+        inner join sys.schemas as s
+        on s.schema_id = o.schema_id
+        INNER JOIN sys.tables as t
+        on t.object_id = o.parent_object_id
+    WHERE o.type_desc LIKE '%CONSTRAINT'
+        AND s.name = '___SCHEMA___'
+        AND t.name = '___NAME___'
+    ORDER BY ConstraintName
+
+    ----- ASSERT -------------------------------------------------
+
+    -- Assert to have the same values
+    EXEC tSQLt.AssertEqualsTable @Expected = '#expected', @Actual = '#actual';
+
+END;
+GO

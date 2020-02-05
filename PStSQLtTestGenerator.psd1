@@ -47,6 +47,7 @@
     'New-PSTGIndexColumnTest',
     'New-PSTGProcedureParameterTest',
     'New-PSTGTableColumnTest',
+    'New-PSTGTableConstraintTest',
     'New-PSTGTableIndexTest',
     'New-PSTGViewColumnTest'
 
