@@ -50,7 +50,7 @@ ___INDEXES___
     ----- ASSERT -------------------------------------------------
 
     -- Assert to have the same values
-    EXEC tSQLt.AssertEqualsTable @Expected = '#expected'
+    EXEC tSQLt.AssertEqualsTable @Expected = '#expected',
                                  @Actual = '#actual';
 
 END;
