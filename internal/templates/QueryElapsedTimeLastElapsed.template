@@ -1,0 +1,58 @@
+/*
+Description:
+
+Test if the query has the correct elapsed time
+
+Query:
+
+___QUERY___
+
+Changes:
+Date		Who						Notes
+----------	---						--------------------------------------------------------------
+___DATE___	___CREATOR___				Initial procedure
+*/
+CREATE PROCEDURE [___TESTCLASS___].[___TESTNAME___]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ----- ASSEMBLE -----------------------------------------------
+
+    DECLARE @expected BIT,
+            @actual BIT,
+            @expectedElapsed INT,
+            @actualElapsed INT,
+            @sqlhandle VARBINARY(64),
+            @planhandle VARBINARY(64);
+
+    SET @sqlhandle = ___SQLHANDLE___;
+    SET @planhandle = ___PLANHANDLE___;
+
+    SELECT @expectedElapsed = ___ELAPSEDTIME___;
+    SELECT @expected = 1;
+
+    ----- ACT ----------------------------------------------------
+
+    -- Get the actual elapsed time
+    SELECT @actualElapsed = qs.total_elapsed_time / qs.execution_count
+    FROM sys.dm_exec_query_stats AS qs
+    WHERE qs.sql_handle = @sqlhandle
+          AND qs.plan_handle = @planhandle;
+
+	-- Calculate actual
+    SELECT @actual = CASE
+                         WHEN @actualElapsed <= @expectedElapsed THEN
+                             1
+                         ELSE
+                             0
+                     END;
+
+    ----- ASSERT -------------------------------------------------
+
+    EXEC tSQLt.AssertEquals @Expected = @expected,
+                            @Actual = @actual,
+                            @Message = 'Actual elapsed time is higher than expected';
+
+
+END;
