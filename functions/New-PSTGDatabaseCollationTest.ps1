@@ -43,7 +43,7 @@ function New-PSTGDatabaseCollationTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGDatabaseCollationTest -Database DB1 -OutputPath "C:\Projects\DB1\TestBasic\"
+        New-PSTGDatabaseCollationTest -SqlInstance SQL1 -Database DB1 -OutputPath "C:\Projects\DB1\TestBasic\"
 
         Create a new database collation test
     #>

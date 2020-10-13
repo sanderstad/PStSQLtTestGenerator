@@ -55,7 +55,7 @@ function New-PSTGIndexColumnTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGIndexColumnTest -Table $table -OutputPath $OutputPath
+        New-PSTGIndexColumnTest -SqlInstance SQL1 -Database DB1 -Table $table -OutputPath $OutputPath
 
         Create a new index column test
 

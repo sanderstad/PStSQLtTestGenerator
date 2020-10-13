@@ -52,7 +52,7 @@ function New-PSTGTableConstraintTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGTableConstraintTest -Table $table -OutputPath $OutputPath
+        New-PSTGTableConstraintTest -SqlInstance SQL1 -Database DB1 -Table $table -OutputPath $OutputPath
 
         Create a new constraint test
 

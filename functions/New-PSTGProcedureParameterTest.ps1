@@ -52,7 +52,7 @@ function New-PSTGProcedureParameterTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGProcedureParameterTest -Procedure $procedure -OutputPath $OutputPath
+        New-PSTGProcedureParameterTest -SqlInstance SQL1 -Database DB1 -Procedure $procedure -OutputPath $OutputPath
 
         Create a new procedure parameter test
 

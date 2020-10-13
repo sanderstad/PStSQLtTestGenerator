@@ -52,7 +52,7 @@ function New-PSTGTableColumnTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGTableColumnTest -Table $table -OutputPath $OutputPath
+        New-PSTGTableColumnTest -SqlInstance SQL1 -Database DB1 -Table $table -OutputPath $OutputPath
 
         Create a new table column test
 

@@ -52,7 +52,7 @@ function New-PSTGFunctionParameterTest {
         Using this switch turns this "nice by default" feature off and enables you to catch exceptions with your own try/catch.
 
     .EXAMPLE
-        New-PSTGFunctionParameterTest -Function $function -OutputPath $OutputPath
+        New-PSTGFunctionParameterTest -SqlInstance SQL1 -Database DB1 -Function $function -OutputPath $OutputPath
 
         Create a new function parameter test
 
