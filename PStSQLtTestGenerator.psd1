@@ -46,6 +46,7 @@
     'New-PSTGFunctionParameterTest',
     'New-PSTGIndexColumnTest',
     'New-PSTGProcedureParameterTest',
+    'New-PSTGQueryElapsedTimeTest',
     'New-PSTGTableColumnTest',
     'New-PSTGTableConstraintTest',
     'New-PSTGTableIndexTest',
