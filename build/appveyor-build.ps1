@@ -52,6 +52,7 @@ try {
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\build" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\resources" -Force -Recurse
     Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\tests" -Force -Recurse
+    Remove-Item -Path "$($publishDir.FullName)\PStSQLtTestGenerator\.github" -Force -Recurse
 }
 catch {
     Stop-PSFFunction -Message "Could not remove directories" -Target $publishDir.FullName -ErrorRecord $_
