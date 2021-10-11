@@ -154,10 +154,10 @@ function New-PSTGProcedureParameterTest {
         $objects = @()
 
         if ($InputObject) {
-            $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Where-Object Name -in $InputObject | Select-Object SchemaName, Name
+            $objects += Get-DbaModule -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Where-Object Name -in $InputObject | Select-Object SchemaName, Name
         }
         else {
-            $objects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
+            $objects += Get-DbaModule -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
         }
 
         if ($Schema) {
