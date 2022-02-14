@@ -297,7 +297,7 @@ function Invoke-PSTGTestGenerator {
 
             $dbObjects = @()
 
-            $dbObjects += Get-DbaModule -SqlInstance $SqlInstance -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
+            $dbObjects += Get-DbaModule -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Type StoredProcedure -ExcludeSystemObjects | Select-Object SchemaName, Name
 
             if ($Schema) {
                 $dbObjects = $dbObjects | Where-Object SchemaName -in $Schema

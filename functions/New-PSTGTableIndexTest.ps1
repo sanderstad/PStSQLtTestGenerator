@@ -196,7 +196,7 @@ function New-PSTGTableIndexTest {
                         Stop-PSFFunction -Message "Could not import test template 'TableIndexTest.template'" -Target $testName -ErrorRecord $_
                     }
 
-                    # Get the columns
+                    <# # Get the columns
                     $query = "SELECT ind.name AS Name
                         FROM sys.indexes ind
                             INNER JOIN sys.tables t
@@ -205,10 +205,11 @@ function New-PSTGTableIndexTest {
                                 ON s.schema_id = t.schema_id
                         WHERE s.name = '$($tableObject.Schema)'
                             AND t.name = '$($tableObject.Name)'
-                            AND ind.name IS NOT NULL;"
+                            AND ind.name IS NOT NULL;" #>
 
                     try {
-                        $indexes = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                        #$indexes = Invoke-DbaQuery -SqlInstance $SqlInstance -SqlCredential $SqlCredential -Database $Database -Query $query
+                        [array]$indexes = $tableObject.Indexes
                     }
                     catch {
                         Stop-PSFFunction -Message "Could not retrieve indexes for [$($tableObject.Schema)].[$($tableObject.Name)]" -Target $tableObject -Continue

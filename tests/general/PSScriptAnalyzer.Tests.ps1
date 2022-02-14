@@ -1,4 +1,4 @@
-﻿[CmdletBinding()]
+[CmdletBinding()]
 Param (
 	[switch]
 	$SkipTest,
@@ -27,11 +27,11 @@ Describe 'Invoking PSScriptAnalyzer against commandbase' {
 					{
 						$analysis | Where-Object RuleName -EQ $rule -outvariable failures | ForEach-Object { $list.Add($_) }
 						
-						1 | Should Be 0
+						1 | Should -Be 0
 					}
 					else
 					{
-						0 | Should Be 0
+						0 | Should -Be 0
 					}
 				}
 			}
