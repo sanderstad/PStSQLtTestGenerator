@@ -1,4 +1,4 @@
-﻿$moduleRoot = (Resolve-Path "$PSScriptRoot\..\..").Path
+$moduleRoot = (Resolve-Path "$PSScriptRoot\..\..").Path
 
 . "$PSScriptRoot\FileIntegrity.Exceptions.ps1"
 
@@ -50,7 +50,7 @@ Describe "Verifying integrity of module files" {
             $ast = [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$parseErrors)
 
             It "[$name] Should have no syntax errors" {
-                $parseErrors | Should Be $Null
+                $parseErrors | Should -Be $Null
             }
 
             foreach ($command in $global:BannedCommands) {
@@ -61,7 +61,7 @@ Describe "Verifying integrity of module files" {
                 }
             }
 
-            It "[$name] Should not contain aliases" {
+            It "[$name] Should -Not -FileContentMatch aliases" {
                 $tokens | Where-Object TokenFlags -eq CommandName | Where-Object { Test-Path "alias:\$($_.Text)" } | Measure-Object | Select-Object -ExpandProperty Count | Should -Be 0
             }
         }
